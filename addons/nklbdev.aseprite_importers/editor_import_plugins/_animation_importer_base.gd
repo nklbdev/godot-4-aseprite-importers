@@ -56,6 +56,7 @@ func _export_texture(source_file: String, options: Common.ParsedAnimationOptions
 	var spritesheet_metadata = SpritesheetMetadata.new()
 	var png_path: String = source_file.get_basename() + ".png"
 	var global_png_path: String = ProjectSettings.globalize_path(png_path)
+	var is_png_file_present = FileAccess.file_exists(png_path)
 
 	var aseprite_executable_path: String = ProjectSettings.get_setting(Common.ASEPRITE_EXECUTABLE_PATH_SETTING_NAME)
 	if not FileAccess.file_exists(aseprite_executable_path):
@@ -158,11 +159,14 @@ func _export_texture(source_file: String, options: Common.ParsedAnimationOptions
 	image.save_png(global_png_path)
 	image = null
 
-	# This function does not import the file. But its call is needed
-	# so that the call to the "append" function passes without errors
-	_parent_plugin.get_editor_interface().get_resource_filesystem().update_file(png_path)
-	append_import_external_resource(png_path, image_options, "texture")
-	gen_files.append(png_path)
+	if is_png_file_present:
+		# This is for reload the image if it was changed by import processing
+		_parent_plugin.get_editor_interface().get_resource_filesystem().call_deferred("scan_sources")
+	else:
+		# This function does not import the file. But its call is needed
+		# so that the call to the "append" function passes without errors
+		_parent_plugin.get_editor_interface().get_resource_filesystem().update_file(png_path)
+		append_import_external_resource(png_path, image_options, "texture")
 
 	# This is a working way to reuse a previously imported resource. Don't change it!
 	var texture: Texture2D = ResourceLoader.load(png_path, "Texture2D", ResourceLoader.CACHE_MODE_REPLACE) as Texture2D

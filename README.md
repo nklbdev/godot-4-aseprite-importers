@@ -9,7 +9,9 @@ https://user-images.githubusercontent.com/7024016/236665418-fe8036b9-7de5-4608-a
 
 ## 💽 Installation
 
-Simply download or clone this repository and copy the contents of the `addons` folder to your own project's `addons` folder.
+Simply download it from [Godot Asset Library](https://godotengine.org/asset-library/asset/1880).
+
+Alternatively download or clone this repository and copy the contents of the `addons` folder to your own project's `addons` folder.
 
 Then enable the plugin on the Project Settings and use new class in your scenes.
 

@@ -18,8 +18,10 @@ func _init(parent_plugin: EditorPlugin) -> void:
 func _import(source_file: String, save_path: String, options: Dictionary,
 	platform_variants: Array[String], gen_files: Array[String]) -> Error:
 	var status: Error = OK
-	var parsed_options = Common.ParsedAnimationOptions.new(options)
-	var export_result: ExportResult = _export_texture(source_file, parsed_options, options, gen_files)
+	var sprite_sheet_options = Common.ParsedSpriteSheetOptions.new(options)
+	var animation_options = Common.ParsedAnimationOptions.new(options)
+	var sprite_sheet_export_result: SpriteSheetExportResult = _export_sprite_sheet(source_file, sprite_sheet_options)
+	var animation_tags: Array[AnimationTag] = _parse_animation_tags(sprite_sheet_export_result, animation_options)
 
 	var packed_scene: PackedScene
 	var animated_sprite: AnimatedSprite3D
@@ -48,15 +50,15 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 		packed_scene = PackedScene.new()
 
 
-	status = SpriteFramesImporter.update_sprite_frames(export_result, sprite_frames)
+	status = SpriteFramesImporter.update_sprite_frames(sprite_sheet_export_result, animation_tags, sprite_frames)
 	if status: push_error("Cannot update SpriteFrames", status); return status
 
-	if not parsed_options.animation_autoplay_name.is_empty():
-		if sprite_frames.has_animation(parsed_options.animation_autoplay_name):
-			animated_sprite.autoplay = parsed_options.animation_autoplay_name
+	if not animation_options.animation_autoplay_name.is_empty():
+		if sprite_frames.has_animation(animation_options.animation_autoplay_name):
+			animated_sprite.autoplay = animation_options.animation_autoplay_name
 		else:
 			push_warning("Not found animation to set autoplay with name \"%s\"" %
-				parsed_options.animation_autoplay_name)
+				animation_options.animation_autoplay_name)
 
 	packed_scene.pack(animated_sprite)
 

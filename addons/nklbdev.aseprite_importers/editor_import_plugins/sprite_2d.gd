@@ -3,19 +3,19 @@ extends "_animation_importer_base.gd"
 const OPTION_SPRITE2D_CENTERED: String = "sprite2d/centered"
 
 
-const OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(packed_spritesheet)"
+const OPTION_PACKED_SPRITE_SHEET_ANIMATION_STRATEGY: String = "animation/strategy_(packed_sprite_sheet)"
 
-const PACKED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET: String = "Animate sprite's region and offset"
-const PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
-const PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
+const PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET: String = "Animate sprite's region and offset"
+const PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
+const PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
 
-const PACKED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
-	PACKED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
-	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
-	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
+const PACKED_SPRITE_SHEET_ANIMATION_STRATEGIES: PackedStringArray = [
+	PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
+	PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
+	PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
 
-enum PackedSpritesheetAnimationStrategy
+enum PackedSpriteSheetAnimationStrategy
 {
 	SpriteRegionAndOffset = 0,
 	TextureRegionAndMargin = 1,
@@ -23,23 +23,23 @@ enum PackedSpritesheetAnimationStrategy
 }
 
 
-const OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(grid-based_spritesheet)"
+const OPTION_GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY: String = "animation/strategy_(grid-based_sprite_sheet)"
 
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION: String = "Animate sprite's region"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX: String = "Animate sprite's frame index"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS: String = "Animate sprite's frame coords"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION: String = "Animate single atlas texture's region"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
+const GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_REGION: String = "Animate sprite's region"
+const GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX: String = "Animate sprite's frame index"
+const GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS: String = "Animate sprite's frame coords"
+const GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_REGION: String = "Animate single atlas texture's region"
+const GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
 
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
+const GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGIES: PackedStringArray = [
+	GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_REGION,
+	GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX,
+	GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS,
+	GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_REGION,
+	GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
 
-enum GridBasedSpritesheetAnimationStrategy
+enum GridBasedSpriteSheetAnimationStrategy
 {
 	SpriteRegion = 0,
 	SpriteFrameIndex = 1,
@@ -51,13 +51,13 @@ enum GridBasedSpritesheetAnimationStrategy
 class Sprite2DParsedAnimationOptions:
 	extends Common.ParsedAnimationOptions
 	var centered: bool
-	var packed_animation_strategy: PackedSpritesheetAnimationStrategy
-	var grid_based_animation_strategy: GridBasedSpritesheetAnimationStrategy
+	var packed_animation_strategy: PackedSpriteSheetAnimationStrategy
+	var grid_based_animation_strategy: GridBasedSpriteSheetAnimationStrategy
 	func _init(options: Dictionary) -> void:
-		packed_animation_strategy = PACKED_SPRITESHEET_ANIMATION_STRATEGIES \
-			.find(options[OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY])
-		grid_based_animation_strategy = GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES \
-			.find(options[OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY])
+		packed_animation_strategy = PACKED_SPRITE_SHEET_ANIMATION_STRATEGIES \
+			.find(options[OPTION_PACKED_SPRITE_SHEET_ANIMATION_STRATEGY])
+		grid_based_animation_strategy = GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGIES \
+			.find(options[OPTION_GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY])
 		super(options)
 
 
@@ -74,76 +74,77 @@ func _init(parent_plugin: EditorPlugin) -> void:
 	set_preset("Animation", [
 		Common.create_option(OPTION_SPRITE2D_CENTERED, true, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		Common.create_option(
-			OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY,
-			PACKED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
-			PROPERTY_HINT_ENUM, ",".join(PACKED_SPRITESHEET_ANIMATION_STRATEGIES),
+			OPTION_PACKED_SPRITE_SHEET_ANIMATION_STRATEGY,
+			PACKED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
+			PROPERTY_HINT_ENUM, ",".join(PACKED_SPRITE_SHEET_ANIMATION_STRATEGIES),
 			PROPERTY_USAGE_EDITOR,
 			func (options:Dictionary) -> bool:
-				return options[Common.OPTION_SPRITESHEET_LAYOUT] == Common.SPRITESHEET_LAYOUTS[Common.SpritesheetLayout.PACKED]),
+				return options[Common.OPTION_SPRITE_SHEET_LAYOUT] == Common.SPRITE_SHEET_LAYOUTS[Common.SpriteSheetLayout.PACKED]),
 		Common.create_option(
-			OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY,
-			GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION,
-			PROPERTY_HINT_ENUM, ",".join(GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES),
+			OPTION_GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY,
+			GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGY_SPRITE_REGION,
+			PROPERTY_HINT_ENUM, ",".join(GRID_BASED_SPRITE_SHEET_ANIMATION_STRATEGIES),
 			PROPERTY_USAGE_EDITOR,
 			func (options:Dictionary) -> bool:
-				return options[Common.OPTION_SPRITESHEET_LAYOUT] != Common.SPRITESHEET_LAYOUTS[Common.SpritesheetLayout.PACKED]),
+				return options[Common.OPTION_SPRITE_SHEET_LAYOUT] != Common.SPRITE_SHEET_LAYOUTS[Common.SpriteSheetLayout.PACKED]),
 	])
 
 func _import(source_file: String, save_path: String, options: Dictionary,
 	platform_variants: Array[String], gen_files: Array[String]) -> Error:
 	var status: Error = OK
-	var parsed_options: Sprite2DParsedAnimationOptions = Sprite2DParsedAnimationOptions.new(options)
-	var export_result: ExportResult = _export_texture(source_file, parsed_options, options, gen_files)
+	var sprite_sheet_options = Common.ParsedSpriteSheetOptions.new(options)
+	var animation_options = Common.ParsedAnimationOptions.new(options)
+	var sprite_sheet_export_result: SpriteSheetExportResult = _export_sprite_sheet(source_file, sprite_sheet_options)
+	var animation_tags: Array[AnimationTag] = _parse_animation_tags(sprite_sheet_export_result, animation_options)
 
 	var centered = options[OPTION_SPRITE2D_CENTERED]
 
 	var sprite: Sprite2D = Sprite2D.new()
 	sprite.name = source_file.get_file().get_basename()
-	sprite.texture = export_result.texture
+	sprite.texture = sprite_sheet_export_result.texture
 	sprite.centered = centered
 
-	var ssmd: SpritesheetMetadata = export_result.spritesheet_metadata
-	var autoplay: String = parsed_options.animation_autoplay_name
+	var autoplay: String = animation_options.animation_autoplay_name
 	var animation_player: AnimationPlayer
-	match parsed_options.spritesheet_layout:
-		Common.SpritesheetLayout.PACKED:
-			match parsed_options.packed_animation_strategy:
+	match sprite_sheet_options.sprite_sheet_layout:
+		Common.SpriteSheetLayout.PACKED:
+			match animation_options.packed_animation_strategy:
 
-				PackedSpritesheetAnimationStrategy.SpriteRegionAndOffset:
+				PackedSpriteSheetAnimationStrategy.SpriteRegionAndOffset:
 					sprite.region_enabled = true
-					animation_player = _create_animation_player(ssmd, {
+					animation_player = _create_animation_player(animation_tags, {
 						".:offset": func (frame_data: FrameData) -> Vector2:
 							return frame_data.region_rect_offset + \
-								((frame_data.region_rect.size - ssmd.source_size) if centered else Vector2i.ZERO) / 2,
+								((frame_data.region_rect.size - sprite_sheet_export_result.source_size) if centered else Vector2i.ZERO) / 2,
 						".:region_rect" : func (frame_data: FrameData) -> Rect2i:
 							return frame_data.region_rect },
 						autoplay)
 
-				PackedSpritesheetAnimationStrategy.TextureRegionAndMargin:
+				PackedSpriteSheetAnimationStrategy.TextureRegionAndMargin:
 					var atlas_texture: AtlasTexture = AtlasTexture.new()
 					atlas_texture.filter_clip = true
 					atlas_texture.resource_local_to_scene = true
 					atlas_texture.atlas = sprite.texture
 					sprite.texture = atlas_texture
-					animation_player = _create_animation_player(ssmd, {
+					animation_player = _create_animation_player(animation_tags, {
 						".:texture:margin": func (frame_data: FrameData) -> Rect2:
-							return Rect2(frame_data.region_rect_offset, ssmd.source_size - frame_data.region_rect.size),
+							return Rect2(frame_data.region_rect_offset, sprite_sheet_export_result.source_size - frame_data.region_rect.size),
 						".:texture:region" : func (frame_data: FrameData) -> Rect2i:
 							return  frame_data.region_rect },
-						parsed_options.animation_autoplay_name)
+						animation_options.animation_autoplay_name)
 
-				PackedSpritesheetAnimationStrategy.TextureInstances:
+				PackedSpriteSheetAnimationStrategy.TextureInstances:
 					var texture_cache: Array[AtlasTexture]
-					animation_player = _create_animation_player(ssmd, {
+					animation_player = _create_animation_player(animation_tags, {
 						".:texture": func (frame_data: FrameData) -> Texture2D:
-							var margin = Rect2(frame_data.region_rect_offset, ssmd.source_size - frame_data.region_rect.size)
+							var margin = Rect2(frame_data.region_rect_offset, sprite_sheet_export_result.source_size - frame_data.region_rect.size)
 							var region = Rect2(frame_data.region_rect)
 							var cached_result = texture_cache.filter(func (t: AtlasTexture) -> bool: return t.margin == margin and t.region == region)
 							var texture: AtlasTexture
 							if not cached_result.is_empty():
 								return cached_result.front()
 							texture = AtlasTexture.new()
-							texture.atlas = export_result.texture
+							texture.atlas = sprite_sheet_export_result.texture
 							texture.filter_clip = true
 							texture.margin = margin
 							texture.region = region
@@ -151,76 +152,71 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 							return texture},
 						autoplay)
 
-		Common.SpritesheetLayout.BY_ROWS, Common.SpritesheetLayout.BY_COLUMNS:
-			match parsed_options.grid_based_animation_strategy:
+		Common.SpriteSheetLayout.BY_ROWS, Common.SpriteSheetLayout.BY_COLUMNS:
+			match animation_options.grid_based_animation_strategy:
 
-				GridBasedSpritesheetAnimationStrategy.SpriteRegion:
+				GridBasedSpriteSheetAnimationStrategy.SpriteRegion:
 					sprite.region_enabled = true
-					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
+					var random_frame_data: FrameData = animation_tags[0].frames[0]
 					sprite.offset = random_frame_data.region_rect_offset + \
-						((random_frame_data.region_rect.size - ssmd.source_size) if centered else Vector2i.ZERO) / 2
-					animation_player = _create_animation_player(ssmd, {
+						((random_frame_data.region_rect.size - sprite_sheet_export_result.source_size) if centered else Vector2i.ZERO) / 2
+					animation_player = _create_animation_player(animation_tags, {
 						".:region_rect" : func (frame_data: FrameData) -> Rect2i:
 							return frame_data.region_rect },
 						autoplay)
 
-				GridBasedSpritesheetAnimationStrategy.SpriteFrameIndex:
-					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
+				GridBasedSpriteSheetAnimationStrategy.SpriteFrameIndex:
+					var random_frame_data: FrameData = animation_tags[0].frames[0]
 					var grid_cell_size: Vector2i = random_frame_data.region_rect.size
-					if parsed_options.border_type == Common.BorderType.Extruded:
+					if sprite_sheet_options.border_type == Common.BorderType.Extruded:
 						grid_cell_size += Vector2i.ONE * 2
-					match parsed_options.spritesheet_layout:
-						Common.SpritesheetLayout.BY_ROWS:
-							sprite.hframes = parsed_options.spritesheet_fixed_columns_count
-							sprite.vframes = ssmd.spritesheet_size.y / grid_cell_size.y
-						Common.SpritesheetLayout.BY_COLUMNS:
-							sprite.hframes = ssmd.spritesheet_size.x / grid_cell_size.x
-							sprite.vframes = parsed_options.spritesheet_fixed_rows_count
-					animation_player = _create_animation_player(ssmd, {
+					match sprite_sheet_options.sprite_sheet_layout:
+						Common.SpriteSheetLayout.BY_ROWS:
+							sprite.hframes = sprite_sheet_options.sprite_sheet_fixed_columns_count
+							sprite.vframes = sprite_sheet_export_result.sprite_sheet_size.y / grid_cell_size.y
+						Common.SpriteSheetLayout.BY_COLUMNS:
+							sprite.hframes = sprite_sheet_export_result.sprite_sheet_size.x / grid_cell_size.x
+							sprite.vframes = sprite_sheet_options.sprite_sheet_fixed_rows_count
+					animation_player = _create_animation_player(animation_tags, {
 						".:frame": func (frame_data: FrameData) -> int:
 							var frame_coords: Vector2i = frame_data.region_rect.position / grid_cell_size
-							match parsed_options.spritesheet_layout:
-								Common.SpritesheetLayout.BY_ROWS:
-									return parsed_options.spritesheet_fixed_columns_count * frame_coords.y + frame_coords.x
-								Common.SpritesheetLayout.BY_COLUMNS:
-									return parsed_options.spritesheet_fixed_rows_count * frame_coords.x + frame_coords.y
-							push_error("Unexpected spritesheet layout type")
+							match sprite_sheet_options.sprite_sheet_layout:
+								Common.SpriteSheetLayout.BY_ROWS:
+									return sprite_sheet_options.sprite_sheet_fixed_columns_count * frame_coords.y + frame_coords.x
+								Common.SpriteSheetLayout.BY_COLUMNS:
+									return sprite_sheet_options.sprite_sheet_fixed_rows_count * frame_coords.x + frame_coords.y
+							push_error("Unexpected sprite sheet layout type")
 							return 0 },
 						autoplay)
 
-				GridBasedSpritesheetAnimationStrategy.SpriteFrameCoords:
-					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
+				GridBasedSpriteSheetAnimationStrategy.SpriteFrameCoords:
+					var random_frame_data: FrameData = animation_tags[0].frames[0]
 					var grid_cell_size: Vector2i = random_frame_data.region_rect.size
-					if parsed_options.border_type == Common.BorderType.Extruded:
+					if sprite_sheet_options.border_type == Common.BorderType.Extruded:
 						grid_cell_size += Vector2i.ONE * 2
-					match parsed_options.spritesheet_layout:
-						Common.SpritesheetLayout.BY_ROWS:
-							sprite.hframes = parsed_options.spritesheet_fixed_columns_count
-							sprite.vframes = ssmd.spritesheet_size.y / grid_cell_size.y
-						Common.SpritesheetLayout.BY_COLUMNS:
-							sprite.hframes = ssmd.spritesheet_size.x / grid_cell_size.x
-							sprite.vframes = parsed_options.spritesheet_fixed_rows_count
-					animation_player = _create_animation_player(ssmd, {
+					sprite.hframes = sprite_sheet_export_result.sprite_sheet_size.x / grid_cell_size.x
+					sprite.vframes = sprite_sheet_export_result.sprite_sheet_size.y / grid_cell_size.y
+					animation_player = _create_animation_player(animation_tags, {
 						".:frame_coords": func (frame_data: FrameData) -> Vector2i:
 							return frame_data.region_rect.position / grid_cell_size },
 						autoplay)
 
-				GridBasedSpritesheetAnimationStrategy.TextureRegion:
-					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
+				GridBasedSpriteSheetAnimationStrategy.TextureRegion:
+					var random_frame_data: FrameData = animation_tags[0].frames[0]
 					var atlas_texture = AtlasTexture.new()
-					atlas_texture.atlas = export_result.texture
+					atlas_texture.atlas = sprite_sheet_export_result.texture
 					atlas_texture.filter_clip = true
 					atlas_texture.resource_local_to_scene = true
-					atlas_texture.margin = Rect2(random_frame_data.region_rect_offset, ssmd.source_size - random_frame_data.region_rect.size)
+					atlas_texture.margin = Rect2(random_frame_data.region_rect_offset, sprite_sheet_export_result.source_size - random_frame_data.region_rect.size)
 					sprite.texture = atlas_texture
-					animation_player = _create_animation_player(ssmd, {
+					animation_player = _create_animation_player(animation_tags, {
 						".:texture:region" : func (frame_data: FrameData) -> Rect2i:
 							return  frame_data.region_rect },
 						autoplay)
 
-				GridBasedSpritesheetAnimationStrategy.TextureInstances:
+				GridBasedSpriteSheetAnimationStrategy.TextureInstances:
 					var texture_cache: Array[AtlasTexture]
-					animation_player = _create_animation_player(ssmd, {
+					animation_player = _create_animation_player(animation_tags, {
 						".:texture": func (frame_data: FrameData) -> Texture2D:
 							var region = Rect2(frame_data.region_rect)
 							var cached_result = texture_cache.filter(func (t: AtlasTexture) -> bool: return t.region == region)
@@ -228,7 +224,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 							if not cached_result.is_empty():
 								return cached_result.front()
 							texture = AtlasTexture.new()
-							texture.atlas = export_result.texture
+							texture.atlas = sprite_sheet_export_result.texture
 							texture.filter_clip = true
 							texture.region = region
 							texture_cache.append(texture)

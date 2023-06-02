@@ -20,6 +20,16 @@ var __option_visibility_checkers: Dictionary
 func _init(parent_plugin: EditorPlugin) -> void:
 	_parent_plugin = parent_plugin
 
+func set_preset(name: StringName, options: Array[Dictionary]) -> void:
+	var preset: Array[Dictionary] = []
+	preset.append_array(options)
+	__option_visibility_checkers.clear()
+	for option in preset:
+		var option_visibility_checker: Callable = option.get("get_is_visible", Common.EMPTY_CALLABLE)
+		if option_visibility_checker != Common.EMPTY_CALLABLE:
+			__option_visibility_checkers[option.name] = option_visibility_checker
+	_presets[name] = preset
+
 func _get_import_options(path: String, preset_index: int) -> Array[Dictionary]:
 	return _presets.values()[preset_index] as Array[Dictionary]
 

@@ -1,27 +1,14 @@
-extends "_importer_base.gd"
+extends "_sprite_sheet_importer_base.gd"
 
 # Base class for all nested animation import plugins
 
 func set_preset(name: StringName, options: Array[Dictionary]) -> void:
-	var preset: Array[Dictionary] = []
-	preset.append_array(_parent_plugin.common_options)
-	preset.append_array(options)
-	preset.append_array(_parent_plugin.texture_2d_options)
-	__option_visibility_checkers.clear()
-	for option in preset:
-		var option_visibility_checker: Callable = option.get("get_is_visible", Common.EMPTY_CALLABLE)
-		if option_visibility_checker != Common.EMPTY_CALLABLE:
-			__option_visibility_checkers[option.name] = option_visibility_checker
-	_presets[name] = preset
+	var combined_options: Array[Dictionary] = _parent_plugin.common_animation_options.duplicate()
+	combined_options.append_array(options)
+	super.set_preset(name, combined_options)
 
 func _init(parent_plugin: EditorPlugin) -> void:
 	super(parent_plugin)
-
-class ExportResult:
-	var raw_output: String
-	var parsed_json: JSON
-	var texture: Texture2D
-	var spritesheet_metadata: SpritesheetMetadata
 
 class FrameData:
 	var region_rect: Rect2i
@@ -34,9 +21,9 @@ class AnimationTag:
 	var duration_ms: int
 	var looped: bool
 
-class SpritesheetMetadata:
+class SpriteSheetMetadata:
 	var source_size: Vector2i
-	var spritesheet_size: Vector2i
+	var sprite_sheet_size: Vector2i
 	var animation_tags: Array[AnimationTag]
 
 class TrackFrame:
@@ -46,95 +33,44 @@ class TrackFrame:
 		self.duration_ms = duration_ms
 		self.value = value
 
-const __sheet_types_by_spritesheet_layout: Dictionary = {
-	Common.SpritesheetLayout.PACKED: "packed",
-	Common.SpritesheetLayout.BY_ROWS: "rows",
-	Common.SpritesheetLayout.BY_COLUMNS: "columns",
-}
-
-func _export_texture(source_file: String, options: Common.ParsedAnimationOptions, image_options: Dictionary, gen_files: Array[String]) -> ExportResult:
-	var spritesheet_metadata = SpritesheetMetadata.new()
-	var png_path: String = source_file.get_basename() + ".png"
-	var global_png_path: String = ProjectSettings.globalize_path(png_path)
-	var is_png_file_present = FileAccess.file_exists(png_path)
-
-	var aseprite_executable_path: String = ProjectSettings.get_setting(Common.ASEPRITE_EXECUTABLE_PATH_SETTING_NAME)
-	if not FileAccess.file_exists(aseprite_executable_path):
-		push_error("Cannot fild Aseprite executable. Check Aseprite executable path in project settings.")
-		return null
-
-	var variable_options: Array
-	if options.spritesheet_layout == Common.SpritesheetLayout.BY_ROWS:
-		variable_options += ["--sheet-columns", str(options.spritesheet_fixed_columns_count)]
-	if options.spritesheet_layout == Common.SpritesheetLayout.BY_COLUMNS:
-		variable_options += ["--sheet-rows", str(options.spritesheet_fixed_rows_count)]
-	match options.border_type:
-		Common.BorderType.Transparent: variable_options += ["--inner-padding", "1"]
-		Common.BorderType.Extruded: variable_options += ["--extrude"]
-		Common.BorderType.None: pass
-		_: push_error("unexpected border type")
-	if options.ignore_empty: variable_options += ["--ignore-empty"]
-	if options.merge_duplicates: variable_options += ["--merge-duplicates"]
-	if options.trim: variable_options += ["--trim" if options.spritesheet_layout == Common.SpritesheetLayout.PACKED else "--trim-sprite"]
-
-	var command_line_params: PackedStringArray = PackedStringArray([
-		"--batch",
-		"--filename-format", "{tag}{tagframe}",
-		"--format", "json-array",
-		"--list-tags",
-		"--trim" if options.spritesheet_layout == Common.SpritesheetLayout.PACKED else "--trim-sprite" if options.trim else "",
-		"--sheet-type", __sheet_types_by_spritesheet_layout[options.spritesheet_layout],
-		] + variable_options + [
-		"--sheet", global_png_path,
-		ProjectSettings.globalize_path(source_file)
-	])
-
-	var output: Array = []
-	var err: Error = OS.execute(
-		ProjectSettings.get_setting(Common.ASEPRITE_EXECUTABLE_PATH_SETTING_NAME),
-		command_line_params, output, true)
-	var json = JSON.new()
-	json.parse(output[0])
-
-	var sourceSizeData = json.data.frames[0].sourceSize
-	spritesheet_metadata.source_size = Vector2i(sourceSizeData.w, sourceSizeData.h)
-	spritesheet_metadata.spritesheet_size = Vector2i(json.data.meta.size.w, json.data.meta.size.h)
+func _parse_animation_tags(sprite_sheet_export_result: SpriteSheetExportResult, animation_options: Common.ParsedAnimationOptions) -> Array[AnimationTag]:
 	var frames_data: Array[FrameData]
-	for frame_data in json.data.frames:
+	for frame_data in sprite_sheet_export_result.parsed_json.data.frames:
 		var fd: FrameData = FrameData.new()
 		fd.region_rect = Rect2i(
 			frame_data.frame.x, frame_data.frame.y,
 			frame_data.frame.w, frame_data.frame.h)
 		fd.region_rect_offset = Vector2i(
 			frame_data.spriteSourceSize.x, frame_data.spriteSourceSize.y)
-		if options.border_type == Common.BorderType.Transparent:
+		if sprite_sheet_export_result.border_type == Common.BorderType.Transparent:
 			fd.region_rect = fd.region_rect.grow(-1)
 			fd.region_rect_offset += Vector2i.ONE
 		fd.duration_ms = frame_data.duration
 		frames_data.append(fd)
 
-	var tags_data: Array = json.data.meta.frameTags
+	var tags_data: Array = sprite_sheet_export_result.parsed_json.data.meta.frameTags
 	var unique_names: Array[String] = []
+	var animation_tags: Array[AnimationTag] = []
 	if tags_data.is_empty():
 		var default_animation_tag = AnimationTag.new()
-		default_animation_tag.name = options.default_animation_name
-		if options.default_animation_repeat_count > 0:
-			for cycle_index in options.default_animation_repeat_count:
+		default_animation_tag.name = animation_options.default_animation_name
+		if animation_options.default_animation_repeat_count > 0:
+			for cycle_index in animation_options.default_animation_repeat_count:
 				default_animation_tag.frames.append_array(frames_data)
 		else:
 			default_animation_tag.frames = frames_data
 			default_animation_tag.looped = true
-		spritesheet_metadata.animation_tags.append(default_animation_tag)
+		animation_tags.append(default_animation_tag)
 	else:
 		for tag_data in tags_data:
 			var animation_tag = AnimationTag.new()
 			animation_tag.name = tag_data.name.strip_edges().strip_escapes()
 			if animation_tag.name.is_empty():
 				push_error("Found empty tag name")
-				return null
+				return []
 			if unique_names.has(animation_tag.name):
 				push_error("Found duplicated tag name")
-				return null
+				return []
 			unique_names.append(animation_tag.name)
 
 			var animation_direction = Common.ASEPRITE_OUTPUT_ANIMATION_DIRECTIONS.find(tag_data.direction)
@@ -153,33 +89,13 @@ func _export_texture(source_file: String, options: Common.ParsedAnimationOptions
 			else:
 				animation_tag.frames.append_array(animation_frames)
 				animation_tag.looped = true
-			spritesheet_metadata.animation_tags.append(animation_tag)
+			animation_tags.append(animation_tag)
 
-	var image = Image.load_from_file(global_png_path)
-	image.save_png(global_png_path)
-	image = null
+	return animation_tags
 
-	if is_png_file_present:
-		# This is for reload the image if it was changed by import processing
-		_parent_plugin.get_editor_interface().get_resource_filesystem().call_deferred("scan_sources")
-	else:
-		# This function does not import the file. But its call is needed
-		# so that the call to the "append" function passes without errors
-		_parent_plugin.get_editor_interface().get_resource_filesystem().update_file(png_path)
-		append_import_external_resource(png_path, image_options, "texture")
-
-	# This is a working way to reuse a previously imported resource. Don't change it!
-	var texture: Texture2D = ResourceLoader.load(png_path, "Texture2D", ResourceLoader.CACHE_MODE_REPLACE) as Texture2D
-
-	var export_result = ExportResult.new()
-	export_result.texture = texture
-	export_result.raw_output = output[0]
-	export_result.parsed_json = json
-	export_result.spritesheet_metadata = spritesheet_metadata
-	return export_result
 
 static func _create_animation_player(
-	spritesheet_metadata: SpritesheetMetadata,
+	animation_tags: Array[AnimationTag],
 	track_value_getters_by_property_path: Dictionary,
 	animation_autoplay_name: String = ""
 	) -> AnimationPlayer:
@@ -187,7 +103,7 @@ static func _create_animation_player(
 	animation_player.name = "AnimationPlayer"
 	var animation_library: AnimationLibrary = AnimationLibrary.new()
 
-	for animation_tag in spritesheet_metadata.animation_tags:
+	for animation_tag in animation_tags:
 		var animation: Animation = Animation.new()
 		for property_path in track_value_getters_by_property_path.keys():
 			__create_track(animation, property_path,

@@ -19,13 +19,11 @@ func _enter_tree() -> void:
 		Common.ASEPRITE_EXECUTABLE_PATH_SETTING_NAME, "",
 		TYPE_STRING, PROPERTY_HINT_GLOBAL_FILE, "*.exe")
 	var dir: DirAccess = DirAccess.open(Common.IMPORT_PLUGINS_DIR)
-	print("Loading Aseprite importers...")
 	for file_name in dir.get_files():
 		if file_name.ends_with(".gd") and not file_name.begins_with("_"):
 			var import_plugin: ImportPlugin = \
 				load(Common.IMPORT_PLUGINS_DIR.path_join(file_name)) \
 				.new(self)
-			print(import_plugin._get_importer_name())
 			add_import_plugin(import_plugin)
 			__import_plugins.append(import_plugin)
 

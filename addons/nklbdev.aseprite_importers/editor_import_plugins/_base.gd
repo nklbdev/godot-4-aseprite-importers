@@ -35,7 +35,13 @@ func _get_import_options(path: String, preset_index: int) -> Array[Dictionary]:
 
 func _get_option_visibility(path: String, option_name: StringName, options: Dictionary) -> bool:
 	var option_visibility_checker: Callable = __option_visibility_checkers.get(option_name, Common.EMPTY_CALLABLE)
-	return true if option_visibility_checker == Common.EMPTY_CALLABLE else option_visibility_checker.call(options)
+	if option_visibility_checker:
+		if option_visibility_checker == Common.EMPTY_CALLABLE:
+			return true
+		else:
+			return option_visibility_checker.call(options)
+	else:
+		return true
 
 func _get_import_order() -> int:
 	return _import_order
@@ -141,7 +147,6 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 		"--sheet", global_png_path,
 		ProjectSettings.globalize_path(source_file)
 	])
-	print(command_line_params)
 
 	var output: Array = []
 	var err: Error = OS.execute(

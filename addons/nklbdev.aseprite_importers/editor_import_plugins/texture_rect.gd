@@ -22,7 +22,7 @@ func _init(parent_plugin: EditorPlugin) -> void:
 	_recognized_extensions = ["ase", "aseprite"]
 	_resource_type = "PackedScene"
 	_save_extension = "scn"
-	_visible_name = "TextureRect"
+	_visible_name = "TextureRect (with AnimationPlayer)"
 
 	set_preset("Animation", [
 		Common.create_option(OPTION_ANIMATION_STRATEGY, ANIMATION_STRATEGIES[0], PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), PROPERTY_USAGE_EDITOR)

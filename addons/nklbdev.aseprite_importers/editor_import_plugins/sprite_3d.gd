@@ -1,11 +1,17 @@
 @tool
 extends "_base.gd"
 
+const OPTION_SPRITE3D_CENTERED: String = "sprite3d/centered"
+
 const OPTION_ANIMATION_STRATEGY: String = "animation/strategy"
 
+const ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET: String = "Animate sprite's region and offset"
+const ANIMATION_STRATEGY_SPRITE_FRAME_INDEX: String = "Animate sprite's frame index"
 const ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
 const ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
 const ANIMATION_STRATEGIES: PackedStringArray = [
+	ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
+	ANIMATION_STRATEGY_SPRITE_FRAME_INDEX,
 	ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
 	ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
@@ -13,44 +19,48 @@ const ANIMATION_STRATEGIES: PackedStringArray = [
 func _init(parent_plugin: EditorPlugin) -> void:
 	super(parent_plugin)
 	_import_order = 0
-	_importer_name = "Aseprite TextureRect Import"
+	_importer_name = "Aseprite Sprite3D Import"
 	_priority = 1
 	_recognized_extensions = ["ase", "aseprite"]
 	_resource_type = "PackedScene"
 	_save_extension = "scn"
-	_visible_name = "TextureRect"
+	_visible_name = "Sprite3D"
 
 	set_preset("Animation", [
+		Common.create_option(OPTION_SPRITE3D_CENTERED, PROPERTY_HINT_NONE, "", true, PROPERTY_USAGE_EDITOR),
 		Common.create_option(OPTION_ANIMATION_STRATEGY, PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), ANIMATION_STRATEGIES[0], PROPERTY_USAGE_EDITOR)
 	])
-
 
 func _import(source_file: String, save_path: String, options: Dictionary,
 	platform_variants: Array[String], gen_files: Array[String]) -> Error:
 	var status: Error
 
 	var common_options: Common.Options = Common.Options.new(options)
+	var centered = options[OPTION_SPRITE3D_CENTERED]
 	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files)
 
-	var atlas_texture = AtlasTexture.new()
-	atlas_texture.atlas = export_result.texture
-	atlas_texture.filter_clip = true
-	atlas_texture.resource_local_to_scene = true
+	var sprite: Sprite3D = Sprite3D.new()
+	sprite.name = source_file.get_file().get_basename()
+	sprite.texture = export_result.texture
+	sprite.centered = centered
+	sprite.region_enabled = true
 
-	var texture_rect: TextureRect = TextureRect.new()
-	texture_rect.name = source_file.get_file().get_basename()
-	texture_rect.texture = atlas_texture
-
-	var frame_size: Vector2i = export_result.spritesheet_metadata.source_size
+	var spritesheet_metadata = export_result.spritesheet_metadata
+	var frame_half_size: Vector2 = spritesheet_metadata.source_size / 2.0
 	var animation_player = _create_animation_player(
-		export_result.spritesheet_metadata, {
-			".:texture:margin": func (frame_data: FrameData) -> Rect2:
-				return Rect2(frame_data.region_rect_offset, frame_size - frame_data.region_rect.size),
-			".:texture:region" : func (frame_data: FrameData) -> Rect2i:
-				return  frame_data.region_rect })
+		spritesheet_metadata, {
+			".:offset": func (frame_data: FrameData) -> Vector2:
+				return Vector2(
+					frame_data.region_rect_offset.x,
+					animation_
+				)
+				return frame_data.region_rect_offset + \
+					((frame_data.region_rect.size - spritesheet_metadata.source_size) if centered else 0) / 2.0,
+			".:region_rect" : func (frame_data: FrameData) -> Rect2i:
+				return frame_data.region_rect })
 
-	texture_rect.add_child(animation_player)
-	animation_player.owner = texture_rect
+	sprite.add_child(animation_player)
+	animation_player.owner = sprite
 
 	var packed_sprite: PackedScene
 	if ResourceLoader.exists(source_file):
@@ -59,7 +69,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	if not packed_sprite:
 		packed_sprite = PackedScene.new()
 
-	packed_sprite.pack(texture_rect)
+	packed_sprite.pack(sprite)
 
 	status = ResourceSaver.save(
 		packed_sprite,

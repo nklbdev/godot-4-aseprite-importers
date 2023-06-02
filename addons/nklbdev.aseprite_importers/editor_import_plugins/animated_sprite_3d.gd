@@ -6,12 +6,12 @@ const SpriteFramesImporter = preload("sprite_frames.gd")
 func _init(parent_plugin: EditorPlugin) -> void:
 	super(parent_plugin)
 	_import_order = 0
-	_importer_name = "Aseprite AnimatedSprite2D Import"
+	_importer_name = "Aseprite AnimatedSprite3D Import"
 	_priority = 1
 	_recognized_extensions = ["ase", "aseprite"]
 	_resource_type = "PackedScene"
 	_save_extension = "scn"
-	_visible_name = "AnimatedSprite2D"
+	_visible_name = "AnimatedSprite3D"
 
 	set_preset("Animation", [])
 
@@ -24,7 +24,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files)
 
 	var packed_animated_sprite: PackedScene
-	var animated_sprite: AnimatedSprite2D
+	var animated_sprite: AnimatedSprite3D
 	var sprite_frames: SpriteFrames
 
 	if ResourceLoader.exists(source_file):
@@ -32,7 +32,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 		packed_animated_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 
 	if packed_animated_sprite and packed_animated_sprite.can_instantiate():
-		animated_sprite = packed_animated_sprite.instantiate() as AnimatedSprite2D
+		animated_sprite = packed_animated_sprite.instantiate() as AnimatedSprite3D
 
 	if animated_sprite:
 		sprite_frames = animated_sprite.sprite_frames
@@ -41,7 +41,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 		sprite_frames = SpriteFrames.new()
 
 	if not animated_sprite:
-		animated_sprite = AnimatedSprite2D.new()
+		animated_sprite = AnimatedSprite3D.new()
 		animated_sprite.name = source_file.get_file().get_basename()
 
 	animated_sprite.sprite_frames = sprite_frames

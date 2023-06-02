@@ -61,6 +61,10 @@ After installing the plugin, the project will support `.ase`- and `.aseprite`-fi
 
 ## 🧱 Types of Imported Resources
 
+### 🖼️ `Texture`
+
+You can import your `*.aseprite` or `*.ase` files as regular textures from image files. Unfortunately you can not select layers or frames to render. It renders all visible layers from first animation frame.
+
 ### 🎞 `SpriteFrames`-based animations
 
 - **`SpriteFrames`** - *creates a `SpriteFrames` resource for further use in animated sprites*

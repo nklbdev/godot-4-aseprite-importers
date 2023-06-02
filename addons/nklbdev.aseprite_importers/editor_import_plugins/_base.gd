@@ -8,8 +8,11 @@ func set_preset(name: StringName, options: Array[Dictionary]) -> void:
 	preset.append_array(_parent_plugin.common_options)
 	preset.append_array(options)
 	preset.append_array(_parent_plugin.texture_2d_options)
+	__option_visibility_checkers.clear()
 	for option in preset:
-		__option_visibility_checkers[option.name] = option.get_is_visible
+		var option_visibility_checker: Callable = option.get("get_is_visible", Common.EMPTY_CALLABLE)
+		if option_visibility_checker != Common.EMPTY_CALLABLE:
+			__option_visibility_checkers[option.name] = option_visibility_checker
 	_presets[name] = preset
 
 var _parent_plugin: EditorPlugin
@@ -31,11 +34,8 @@ func _get_import_options(path: String, preset_index: int) -> Array[Dictionary]:
 	return _presets.values()[preset_index] as Array[Dictionary]
 
 func _get_option_visibility(path: String, option_name: StringName, options: Dictionary) -> bool:
-	var lambda = __option_visibility_checkers.get(option_name, func(o): return true)
-	var result: Variant = lambda.call(options)
-	if result == null:
-		return true;
-	return result
+	var option_visibility_checker: Callable = __option_visibility_checkers.get(option_name, Common.EMPTY_CALLABLE)
+	return true if option_visibility_checker == Common.EMPTY_CALLABLE else option_visibility_checker.call(options)
 
 func _get_import_order() -> int:
 	return _import_order
@@ -77,7 +77,7 @@ class ExportResult:
 
 class FrameData:
 	var region_rect: Rect2i
-	var region_rect_offset: Vector2
+	var region_rect_offset: Vector2i
 	var duration_ms: int
 
 class AnimationTag:
@@ -88,6 +88,7 @@ class AnimationTag:
 
 class SpritesheetMetadata:
 	var source_size: Vector2i
+	var spritesheet_size: Vector2i
 	var animation_tags: Array[AnimationTag]
 
 class TrackFrame:
@@ -99,7 +100,13 @@ class TrackFrame:
 
 var __editor_filesystem: EditorFileSystem
 
-func _export_texture(source_file: String, options: Common.Options, image_options: Dictionary, gen_files: Array[String]) -> ExportResult:
+const __sheet_types_by_spritesheet_layout: Dictionary = {
+	Common.SpritesheetLayout.PACKED: "packed",
+	Common.SpritesheetLayout.BY_ROWS: "rows",
+	Common.SpritesheetLayout.BY_COLUMNS: "columns",
+}
+
+func _export_texture(source_file: String, options: Common.Options, image_options: Dictionary, gen_files: Array[String], use_padding_instead_extrusion: bool = false) -> ExportResult:
 	var spritesheet_metadata = SpritesheetMetadata.new()
 	var png_path: String = source_file.get_basename() + ".png"
 	var global_png_path: String = ProjectSettings.globalize_path(png_path)
@@ -109,26 +116,39 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 		push_error("Cannot fild Aseprite executable. Check Aseprite executable path in project settings.")
 		return null
 
+	var variable_options: Array
+	if options.spritesheet_layout == Common.SpritesheetLayout.BY_ROWS:
+		variable_options += ["--sheet-columns", str(options.spritesheet_fixed_columns_count)]
+	if options.spritesheet_layout == Common.SpritesheetLayout.BY_COLUMNS:
+		variable_options += ["--sheet-rows", str(options.spritesheet_fixed_rows_count)]
+	if options.extrude:
+		variable_options += ["--inner-padding", "1"] if use_padding_instead_extrusion else ["--extrude"]
+	if options.ignore_empty: variable_options += ["--ignore-empty"]
+	if options.merge_duplicates: variable_options += ["--merge-duplicates"]
+	if options.trim: variable_options += ["--trim" if options.spritesheet_layout == Common.SpritesheetLayout.PACKED else "--trim-sprite"]
+
+	var command_line_params: PackedStringArray = PackedStringArray([
+		"--batch",
+		"--filename-format", "{tag}{tagframe}",
+		"--format", "json-array",
+		"--list-tags",
+		"--trim" if options.spritesheet_layout == Common.SpritesheetLayout.PACKED else "--trim-sprite",
+		"--sheet-type", __sheet_types_by_spritesheet_layout[options.spritesheet_layout],
+		] + variable_options + [
+		"--sheet", global_png_path,
+		ProjectSettings.globalize_path(source_file)
+	])
+
 	var output: Array = []
 	var err: Error = OS.execute(
 		ProjectSettings.get_setting(Common.ASEPRITE_EXECUTABLE_PATH_SETTING_NAME),
-		PackedStringArray([
-			"--batch",
-			"--filename-format", "{tag}{tagframe}",
-			"--format", "json-array",
-			"--list-tags",
-			"--ignore-empty",
-			"--trim",
-			"--extrude" if options.extrude else "",
-			"--sheet-type", "packed",
-			"--sheet", global_png_path,
-			ProjectSettings.globalize_path(source_file)
-		]), output, true)
+		command_line_params, output, true)
 	var json = JSON.new()
 	json.parse(output[0])
 
 	var sourceSizeData = json.data.frames[0].sourceSize
 	spritesheet_metadata.source_size = Vector2i(sourceSizeData.w, sourceSizeData.h)
+	spritesheet_metadata.spritesheet_size = Vector2i(json.data.meta.size.w, json.data.meta.size.h)
 	var frames_data: Array[FrameData]
 	for frame_data in json.data.frames:
 		var fd: FrameData = FrameData.new()
@@ -137,6 +157,9 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 			frame_data.frame.w, frame_data.frame.h)
 		fd.region_rect_offset = Vector2i(
 			frame_data.spriteSourceSize.x, frame_data.spriteSourceSize.y)
+		if use_padding_instead_extrusion:
+			fd.region_rect = fd.region_rect.grow(-1)
+			fd.region_rect_offset += Vector2i.ONE
 		fd.duration_ms = frame_data.duration
 		frames_data.append(fd)
 
@@ -145,7 +168,6 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 	if tags_data.is_empty():
 		var default_animation_tag = AnimationTag.new()
 		default_animation_tag.name = options.default_animation_name
-		default_animation_tag.direction = options.default_animation_direction
 		if options.default_animation_repeat_count > 0:
 			for cycle_index in options.default_animation_repeat_count:
 				default_animation_tag.frames.append_array(frames_data)
@@ -156,7 +178,6 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 	else:
 		for tag_data in tags_data:
 			var animation_tag = AnimationTag.new()
-
 			animation_tag.name = tag_data.name.strip_edges().strip_escapes()
 			if animation_tag.name.is_empty():
 				push_error("Found empty tag name")

@@ -33,7 +33,7 @@ func _init(parent_plugin: EditorPlugin) -> void:
 	_visible_name = "Sprite3D"
 
 	set_preset("Animation", [
-		Common.create_option(OPTION_SPRITE3D_CENTERED, PROPERTY_HINT_NONE, "", true, PROPERTY_USAGE_EDITOR),
+		Common.create_option(OPTION_SPRITE3D_CENTERED, true, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 #		Common.create_option(OPTION_ANIMATION_STRATEGY, PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), ANIMATION_STRATEGIES[0], PROPERTY_USAGE_EDITOR)
 	])
 

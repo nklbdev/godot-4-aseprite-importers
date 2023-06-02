@@ -25,7 +25,7 @@ func _init(parent_plugin: EditorPlugin) -> void:
 	_visible_name = "TextureRect"
 
 	set_preset("Animation", [
-		Common.create_option(OPTION_ANIMATION_STRATEGY, PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), ANIMATION_STRATEGIES[0], PROPERTY_USAGE_EDITOR)
+		Common.create_option(OPTION_ANIMATION_STRATEGY, ANIMATION_STRATEGIES[0], PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), PROPERTY_USAGE_EDITOR)
 	])
 
 

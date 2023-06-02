@@ -90,21 +90,25 @@ const COMPRESS_MODE_3D_NAMES: PackedStringArray = [
 	"Basis Universal"
 ]
 
+const EMPTY_CALLABLE: Callable = Callable()
+
 static func create_option(
 	name: String,
-	property_hint: PropertyHint,
-	hint_string: String,
-	default_value,
-	usage: PropertyUsageFlags,
-	get_is_visible: Callable = func(options: Dictionary): return true) -> Dictionary:
-	return {
+	default_value: Variant,
+	property_hint: PropertyHint = PROPERTY_HINT_NONE,
+	hint_string: String = "",
+	usage: PropertyUsageFlags = PROPERTY_USAGE_NONE,
+	get_is_visible: Callable = EMPTY_CALLABLE
+	) -> Dictionary:
+	var option_data: Dictionary = {
 		name = name,
-		property_hint = property_hint,
-		hint_string = hint_string,
 		default_value = default_value,
-		usage = usage,
-		get_is_visible = get_is_visible
 	}
+	if hint_string: option_data["hint_string"] = hint_string
+	if property_hint: option_data["property_hint"] = property_hint
+	if usage: option_data["usage"] = usage
+	if get_is_visible != EMPTY_CALLABLE: option_data["get_is_visible"] = get_is_visible
+	return option_data
 
 enum AnimationDirection {
 	FORWARD = 0,
@@ -117,10 +121,13 @@ const ASEPRITE_OUTPUT_ANIMATION_DIRECTIONS: PackedStringArray = [
 const PRESET_OPTIONS_ANIMATION_DIRECTIONS: PackedStringArray = [
 	"Forward", "Reverse", "Ping-pong", "Ping-pong reverse" ]
 
-enum SpriteSheetLayout { PACKED, BY_ROWS, BY_COLUMNS }
-const SPRITE_SHEET_LAYOUTS: PackedStringArray = ["Packed", "By rows", "By columns"]
+enum SpritesheetLayout { PACKED, BY_ROWS, BY_COLUMNS }
+const SPRITESHEET_LAYOUTS: PackedStringArray = ["Packed", "By rows", "By columns"]
 
-const OPTION_SPRITESHEET_EXTRUDE: String = "spritesheet/extrude"
+const OPTION_SPRITESHEET_EXTRUDE: String = "spritesheet/extrude_(if_possible_or_add_transparent_border)"
+const OPTION_SPRITESHEET_TRIM: String = "spritesheet/trim"
+const OPTION_SPRITESHEET_IGNORE_EMPTY: String = "spritesheet/ignore_empty"
+const OPTION_SPRITESHEET_MERGE_DUPLICATES: String = "spritesheet/merge_duplicates"
 const OPTION_SPRITESHEET_LAYOUT: String = "spritesheet/layout"
 const OPTION_ANIMATION_DEFAULT_NAME: String = "animation/default/name"
 const OPTION_ANIMATION_DEFAULT_DIRECTION: String = "animation/default/direction"
@@ -138,25 +145,33 @@ const SPRITESHEET_FIXED_COLUMNS_COUNT: String = "spritesheet/fixed_columns_count
 
 class Options:
 	var extrude: bool
-	var sprite_sheet_layout: SpriteSheetLayout
+	var trim: bool
+	var ignore_empty: bool
+	var merge_duplicates: bool
+	var spritesheet_layout: SpritesheetLayout
+	var spritesheet_fixed_rows_count: int
+	var spritesheet_fixed_columns_count: int
 	var default_animation_name: String
 	var default_animation_direction: AnimationDirection
 	var default_animation_repeat_count: int
 	var animation_autoplay_name: String
-	#var animation_strategy: String
 	var layers_include_regex: String
 	var layers_exclude_regex: String
 	var tags_include_regex: String
 	var tags_exclude_regex: String
 	func _init(options: Dictionary) -> void:
 		extrude = options[OPTION_SPRITESHEET_EXTRUDE]
-		sprite_sheet_layout = SPRITE_SHEET_LAYOUTS.find(options[OPTION_SPRITESHEET_LAYOUT])
+		trim = options[OPTION_SPRITESHEET_TRIM]
+		ignore_empty = options[OPTION_SPRITESHEET_IGNORE_EMPTY]
+		merge_duplicates = options[OPTION_SPRITESHEET_MERGE_DUPLICATES]
+		spritesheet_layout = SPRITESHEET_LAYOUTS.find(options[OPTION_SPRITESHEET_LAYOUT])
+		spritesheet_fixed_rows_count = options[SPRITESHEET_FIXED_ROWS_COUNT]
+		spritesheet_fixed_columns_count = options[SPRITESHEET_FIXED_COLUMNS_COUNT]
 		default_animation_name = options[OPTION_ANIMATION_DEFAULT_NAME].strip_edges().strip_escapes()
 		if default_animation_name.is_empty(): default_animation_name = "default"
 		default_animation_direction = PRESET_OPTIONS_ANIMATION_DIRECTIONS.find(options[OPTION_ANIMATION_DEFAULT_DIRECTION])
 		default_animation_repeat_count = options[OPTION_ANIMATION_DEFAULT_REPEAT_COUNT]
 		animation_autoplay_name = options[OPTION_ANIMATION_AUTOPLAY_NAME].strip_edges().strip_escapes()
-		# animation_strategy = /*select enum value*/ options[OPTION_ANIMATION_STRATEGY]
 		layers_include_regex = options[OPTION_LAYERS_INCLUDE_REG_EX]
 		layers_exclude_regex = options[OPTION_LAYERS_EXCLUDE_REG_EX]
 		tags_include_regex = options[OPTION_TAGS_INCLUDE_REG_EX]
@@ -170,54 +185,57 @@ class Options:
 # https://github.com/godotengine/godot/blob/e9c7b8d2246bd0797af100808419c994fa43a9d2/editor/editor_file_system.cpp#L1855
 static func create_common_options() -> Array[Dictionary]:
 	return [
-		create_option(OPTION_SPRITESHEET_EXTRUDE, PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_SPRITESHEET_LAYOUT, PROPERTY_HINT_ENUM, ",".join(SPRITE_SHEET_LAYOUTS), SPRITE_SHEET_LAYOUTS[SpriteSheetLayout.PACKED], PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED ),
-		create_option(SPRITESHEET_FIXED_ROWS_COUNT, PROPERTY_HINT_RANGE, "0,32,1,or_greater", 0, PROPERTY_USAGE_EDITOR,
-			func(options): return options[OPTION_SPRITESHEET_LAYOUT] == SPRITE_SHEET_LAYOUTS[SpriteSheetLayout.BY_COLUMNS]),
-		create_option(SPRITESHEET_FIXED_COLUMNS_COUNT, PROPERTY_HINT_RANGE, "0,32,1,or_greater", 0, PROPERTY_USAGE_EDITOR,
-			func(options): return options[OPTION_SPRITESHEET_LAYOUT] == SPRITE_SHEET_LAYOUTS[SpriteSheetLayout.BY_ROWS]),
-		create_option(OPTION_ANIMATION_DEFAULT_NAME, PROPERTY_HINT_PLACEHOLDER_TEXT, "default", "default", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_ANIMATION_DEFAULT_DIRECTION, PROPERTY_HINT_ENUM, ",".join(PRESET_OPTIONS_ANIMATION_DIRECTIONS), PRESET_OPTIONS_ANIMATION_DIRECTIONS[0], PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_ANIMATION_DEFAULT_REPEAT_COUNT, PROPERTY_HINT_RANGE, "0,32,1,or_greater", 0, PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_ANIMATION_AUTOPLAY_NAME, PROPERTY_HINT_NONE, "", "", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_LAYERS_INCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "*", "*", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_LAYERS_EXCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "", "", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_TAGS_INCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "*", "*", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_TAGS_EXCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "", "", PROPERTY_USAGE_EDITOR)
+		create_option(OPTION_SPRITESHEET_EXTRUDE, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_TRIM, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_IGNORE_EMPTY, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_MERGE_DUPLICATES, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_LAYOUT, SPRITESHEET_LAYOUTS[SpritesheetLayout.PACKED], PROPERTY_HINT_ENUM, ",".join(SPRITESHEET_LAYOUTS), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED ),
+		create_option(SPRITESHEET_FIXED_ROWS_COUNT, 1, PROPERTY_HINT_RANGE, "1,32,1,or_greater", PROPERTY_USAGE_EDITOR,
+			func(options): return options[OPTION_SPRITESHEET_LAYOUT] == SPRITESHEET_LAYOUTS[SpritesheetLayout.BY_COLUMNS]),
+		create_option(SPRITESHEET_FIXED_COLUMNS_COUNT, 1, PROPERTY_HINT_RANGE, "1,32,1,or_greater", PROPERTY_USAGE_EDITOR,
+			func(options): return options[OPTION_SPRITESHEET_LAYOUT] == SPRITESHEET_LAYOUTS[SpritesheetLayout.BY_ROWS]),
+		create_option(OPTION_ANIMATION_DEFAULT_NAME, "default", PROPERTY_HINT_PLACEHOLDER_TEXT, "default", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_ANIMATION_DEFAULT_DIRECTION, PRESET_OPTIONS_ANIMATION_DIRECTIONS[0], PROPERTY_HINT_ENUM, ",".join(PRESET_OPTIONS_ANIMATION_DIRECTIONS), PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_ANIMATION_DEFAULT_REPEAT_COUNT, 0, PROPERTY_HINT_RANGE, "0,32,1,or_greater", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_ANIMATION_AUTOPLAY_NAME, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_LAYERS_INCLUDE_REG_EX, "*", PROPERTY_HINT_PLACEHOLDER_TEXT, "*", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_LAYERS_EXCLUDE_REG_EX, "", PROPERTY_HINT_PLACEHOLDER_TEXT, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_TAGS_INCLUDE_REG_EX, "*", PROPERTY_HINT_PLACEHOLDER_TEXT, "*", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_TAGS_EXCLUDE_REG_EX, "", PROPERTY_HINT_PLACEHOLDER_TEXT, "", PROPERTY_USAGE_EDITOR)
 	]
 
 # TODO: Убрать отсюда неподходящие варианты, например, Bitmap
 static func create_texture_2d_options() -> Array[Dictionary]:
 	return [
-		create_option("compress/mode", PROPERTY_HINT_ENUM, ",".join(COMPRESS_MODES_NAMES),
-			COMPRESS_MODES_NAMES[CompressMode.LOSSLESS], PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED),
-		create_option("compress/high_quality", PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR,
+		create_option("compress/mode", COMPRESS_MODES_NAMES[CompressMode.LOSSLESS], PROPERTY_HINT_ENUM, ",".join(COMPRESS_MODES_NAMES),
+			PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED),
+		create_option("compress/high_quality", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR,
 			func(options): return options["compress/mode"] == COMPRESS_MODES_NAMES[CompressMode.VRAM_COMPRESSED]),
-		create_option("compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01", 0.7, PROPERTY_USAGE_EDITOR,
+		create_option("compress/lossy_quality", 0.7, PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_EDITOR,
 			func(options): return options["compress/mode"] == COMPRESS_MODES_NAMES[CompressMode.LOSSY]),
-		create_option("compress/hdr_compression", PROPERTY_HINT_ENUM, ",".join(HDR_COMPRESSION_NAMES), HDR_COMPRESSION_NAMES[HdrCompression.DISABLED], PROPERTY_USAGE_EDITOR,
+		create_option("compress/hdr_compression", HDR_COMPRESSION_NAMES[HdrCompression.DISABLED], PROPERTY_HINT_ENUM, ",".join(HDR_COMPRESSION_NAMES), PROPERTY_USAGE_EDITOR,
 			func(options): return options["compress/mode"] == COMPRESS_MODES_NAMES[CompressMode.VRAM_COMPRESSED]),
-		create_option("compress/normal_map", PROPERTY_HINT_ENUM, ",".join(NORMAL_MAP_NAMES), NORMAL_MAP_NAMES[NormalMap.DETECT], PROPERTY_USAGE_EDITOR,
+		create_option("compress/normal_map", NORMAL_MAP_NAMES[NormalMap.DETECT], PROPERTY_HINT_ENUM, ",".join(NORMAL_MAP_NAMES), PROPERTY_USAGE_EDITOR,
 			func(options): return options["compress/mode"] != COMPRESS_MODES_NAMES[CompressMode.LOSSLESS]),
-		create_option("compress/channel_pack", PROPERTY_HINT_ENUM, ",".join(CHANNEL_PACK_NAMES),
-			ChannelPack.SRGB_FRIENDLY, PROPERTY_USAGE_EDITOR), # everywhere
+		create_option("compress/channel_pack", ChannelPack.SRGB_FRIENDLY, PROPERTY_HINT_ENUM, ",".join(CHANNEL_PACK_NAMES),
+			PROPERTY_USAGE_EDITOR), # everywhere
 
-		create_option("mipmaps/generate", PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR),
+		create_option("mipmaps/generate", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		# STRANGE! Appears only on 3D preset. Independently from other properties
-		create_option("mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256,1", -1, PROPERTY_USAGE_EDITOR),
+		create_option("mipmaps/limit", -1, PROPERTY_HINT_RANGE, "-1,256,1", PROPERTY_USAGE_EDITOR),
 
-		create_option("roughness/mode", PROPERTY_HINT_ENUM, ",".join(ROUGHNESS_NAMES),
-			ROUGHNESS_NAMES[Roughness.DETECT], PROPERTY_USAGE_EDITOR),
-		create_option("roughness/src_normal", PROPERTY_HINT_FILE,
-			"*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp", "", PROPERTY_USAGE_EDITOR),
+		create_option("roughness/mode", ROUGHNESS_NAMES[Roughness.DETECT], PROPERTY_HINT_ENUM, ",".join(ROUGHNESS_NAMES),
+			PROPERTY_USAGE_EDITOR),
+		create_option("roughness/src_normal", "", PROPERTY_HINT_FILE,
+			"*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp", PROPERTY_USAGE_EDITOR),
 
-		create_option("process/fix_alpha_border", PROPERTY_HINT_NONE, "", true, PROPERTY_USAGE_EDITOR),
-		create_option("process/premult_alpha", PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR),
-		create_option("process/normal_map_invert_y", PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR),
-		create_option("process/hdr_as_srgb", PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR),
-		create_option("process/hdr_clamp_exposure", PROPERTY_HINT_NONE, "", false, PROPERTY_USAGE_EDITOR),
-		create_option("process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1", 0, PROPERTY_USAGE_EDITOR),
+		create_option("process/fix_alpha_border", true, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option("process/premult_alpha", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option("process/normal_map_invert_y", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option("process/hdr_as_srgb", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option("process/hdr_clamp_exposure", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option("process/size_limit", 0, PROPERTY_HINT_RANGE, "0,4096,1", PROPERTY_USAGE_EDITOR),
 
-		create_option("detect_3d/compress_to", PROPERTY_HINT_ENUM, ",".join(COMPRESS_MODE_3D_NAMES),
-			COMPRESS_MODE_3D_NAMES[CompressMode3D.VRAM_COMPRESSED], PROPERTY_USAGE_EDITOR),
+		create_option("detect_3d/compress_to", COMPRESS_MODE_3D_NAMES[CompressMode3D.VRAM_COMPRESSED],
+			PROPERTY_HINT_ENUM, ",".join(COMPRESS_MODE_3D_NAMES), PROPERTY_USAGE_EDITOR),
 	]

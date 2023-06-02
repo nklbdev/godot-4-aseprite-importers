@@ -17,7 +17,7 @@ const ImportPlugin = preload("editor_import_plugins/_animation_importer_base.gd"
 var __import_plugins: Array[ImportPlugin]
 
 var settings_registry: SettingsRegistry = SettingsRegistry.new()
-var common_options: Array[Dictionary] = Common.create_common_options()
+var common_options: Array[Dictionary] = Common.create_common_animation_options()
 var texture_2d_options: Array[Dictionary] = Common.create_texture_2d_options()
 
 func _enter_tree() -> void:

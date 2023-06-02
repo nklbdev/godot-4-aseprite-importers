@@ -15,9 +15,8 @@ func _init(parent_plugin: EditorPlugin) -> void:
 func _import(source_file: String, save_path: String, options: Dictionary,
 	platform_variants: Array[String], gen_files: Array[String]) -> Error:
 	var status: Error = OK
-
-	var common_options: Common.Options = Common.Options.new(options)
-	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files)
+	var parsed_options = Common.ParsedAnimationOptions.new(options)
+	var export_result: ExportResult = _export_texture(source_file, parsed_options, options, gen_files)
 
 	var sprite_frames: SpriteFrames
 	if ResourceLoader.exists(source_file):

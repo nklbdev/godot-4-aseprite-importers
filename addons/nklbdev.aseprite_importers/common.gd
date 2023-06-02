@@ -141,7 +141,7 @@ const SPRITESHEET_FIXED_COLUMNS_COUNT: String = "spritesheet/fixed_columns_count
 
 
 
-class Options:
+class ParsedAnimationOptions:
 	var border_type: BorderType
 	var trim: bool
 	var ignore_empty: bool
@@ -181,17 +181,18 @@ class Options:
 # After changing the option in the editor, the normal numeric value is already set. Hope this gets fixed soon.
 # The problem is located here:
 # https://github.com/godotengine/godot/blob/e9c7b8d2246bd0797af100808419c994fa43a9d2/editor/editor_file_system.cpp#L1855
-static func create_common_options() -> Array[Dictionary]:
+static func create_common_animation_options() -> Array[Dictionary]:
 	return [
-		create_option(OPTION_SPRITESHEET_BORDER_TYPE, SPRITESHEET_BORDER_TYPES[BorderType.None], PROPERTY_HINT_ENUM, ",".join(SPRITESHEET_BORDER_TYPES), PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_SPRITESHEET_TRIM, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_SPRITESHEET_IGNORE_EMPTY, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
-		create_option(OPTION_SPRITESHEET_MERGE_DUPLICATES, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_SPRITESHEET_LAYOUT, SPRITESHEET_LAYOUTS[SpritesheetLayout.PACKED], PROPERTY_HINT_ENUM, ",".join(SPRITESHEET_LAYOUTS), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED ),
 		create_option(SPRITESHEET_FIXED_ROWS_COUNT, 1, PROPERTY_HINT_RANGE, "1,32,1,or_greater", PROPERTY_USAGE_EDITOR,
 			func(options): return options[OPTION_SPRITESHEET_LAYOUT] == SPRITESHEET_LAYOUTS[SpritesheetLayout.BY_COLUMNS]),
 		create_option(SPRITESHEET_FIXED_COLUMNS_COUNT, 1, PROPERTY_HINT_RANGE, "1,32,1,or_greater", PROPERTY_USAGE_EDITOR,
 			func(options): return options[OPTION_SPRITESHEET_LAYOUT] == SPRITESHEET_LAYOUTS[SpritesheetLayout.BY_ROWS]),
+		create_option(OPTION_SPRITESHEET_BORDER_TYPE, SPRITESHEET_BORDER_TYPES[BorderType.None], PROPERTY_HINT_ENUM, ",".join(SPRITESHEET_BORDER_TYPES), PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_TRIM, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR,
+			func(options): return options[OPTION_SPRITESHEET_LAYOUT] != SPRITESHEET_LAYOUTS[SpritesheetLayout.PACKED]),
+		create_option(OPTION_SPRITESHEET_IGNORE_EMPTY, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_MERGE_DUPLICATES, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_ANIMATION_DEFAULT_NAME, "default", PROPERTY_HINT_PLACEHOLDER_TEXT, "default", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_ANIMATION_DEFAULT_DIRECTION, PRESET_OPTIONS_ANIMATION_DIRECTIONS[0], PROPERTY_HINT_ENUM, ",".join(PRESET_OPTIONS_ANIMATION_DIRECTIONS), PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_ANIMATION_DEFAULT_REPEAT_COUNT, 0, PROPERTY_HINT_RANGE, "0,32,1,or_greater", PROPERTY_USAGE_EDITOR),

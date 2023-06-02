@@ -11,6 +11,11 @@ const PACKED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
 	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
 
+enum PackedSpritesheetAnimationStrategy
+{
+	TextureRegionAndMargin = 0,
+	TextureInstances = 1
+}
 
 
 const OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(grid-based_spritesheet)"
@@ -22,6 +27,24 @@ const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
 	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION,
 	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
+
+enum GridBasedSpritesheetAnimationStrategy
+{
+	TextureRegion = 0,
+	TextureInstances = 1
+}
+
+class TextureRectParsedAnimationOptions:
+	extends Common.ParsedAnimationOptions
+	var centered: bool
+	var packed_animation_strategy: PackedSpritesheetAnimationStrategy
+	var grid_based_animation_strategy: GridBasedSpritesheetAnimationStrategy
+	func _init(options: Dictionary) -> void:
+		packed_animation_strategy = PACKED_SPRITESHEET_ANIMATION_STRATEGIES \
+			.find(options[OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY])
+		grid_based_animation_strategy = GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES \
+			.find(options[OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY])
+		super(options)
 
 
 
@@ -55,11 +78,9 @@ func _init(parent_plugin: EditorPlugin) -> void:
 
 func _import(source_file: String, save_path: String, options: Dictionary,
 	platform_variants: Array[String], gen_files: Array[String]) -> Error:
-
-	var status: Error
-
-	var common_options: Common.Options = Common.Options.new(options)
-	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files)
+	var status: Error = OK
+	var parsed_options: TextureRectParsedAnimationOptions = TextureRectParsedAnimationOptions.new(options)
+	var export_result: ExportResult = _export_texture(source_file, parsed_options, options, gen_files)
 
 	var frame_size: Vector2i = export_result.spritesheet_metadata.source_size
 
@@ -82,21 +103,21 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 
 	var ssmd: SpritesheetMetadata = export_result.spritesheet_metadata
-	var autoplay: String = common_options.animation_autoplay_name
+	var autoplay: String = parsed_options.animation_autoplay_name
 	var animation_player: AnimationPlayer
-	match common_options.spritesheet_layout:
+	match parsed_options.spritesheet_layout:
 		Common.SpritesheetLayout.PACKED:
-			match options[OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY]:
+			match parsed_options.packed_animation_strategy:
 
-				PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN:
+				PackedSpritesheetAnimationStrategy.TextureRegionAndMargin:
 					animation_player = _create_animation_player(ssmd, {
 						".:texture:margin": func (frame_data: FrameData) -> Rect2:
 							return Rect2(frame_data.region_rect_offset, ssmd.source_size - frame_data.region_rect.size),
 						".:texture:region" : func (frame_data: FrameData) -> Rect2i:
 							return  frame_data.region_rect },
-						common_options.animation_autoplay_name)
+						parsed_options.animation_autoplay_name)
 
-				PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES:
+				PackedSpritesheetAnimationStrategy.TextureInstances:
 					var texture_cache: Array[AtlasTexture]
 					animation_player = _create_animation_player(ssmd, {
 						".:texture": func (frame_data: FrameData) -> Texture2D:
@@ -116,9 +137,9 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 						autoplay)
 
 		Common.SpritesheetLayout.BY_ROWS, Common.SpritesheetLayout.BY_COLUMNS:
-			match options[OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY]:
+			match parsed_options.grid_based_animation_strategy:
 
-				GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION:
+				GridBasedSpritesheetAnimationStrategy.TextureRegion:
 					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
 					atlas_texture.margin = Rect2(random_frame_data.region_rect_offset, random_frame_data.region_rect_offset * 2)
 					animation_player = _create_animation_player(ssmd, {
@@ -126,7 +147,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 							return  frame_data.region_rect },
 						autoplay)
 
-				GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES:
+				GridBasedSpritesheetAnimationStrategy.TextureInstances:
 					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
 					var common_atlas_texture_margin: Rect2 = Rect2(
 						random_frame_data.region_rect_offset,

@@ -153,10 +153,10 @@ class ParsedAnimationOptions:
 	var default_animation_direction: AnimationDirection
 	var default_animation_repeat_count: int
 	var animation_autoplay_name: String
-	var layers_include_regex: String
-	var layers_exclude_regex: String
-	var tags_include_regex: String
-	var tags_exclude_regex: String
+	#var layers_include_regex: String
+	#var layers_exclude_regex: String
+	#var tags_include_regex: String
+	#var tags_exclude_regex: String
 	func _init(options: Dictionary) -> void:
 		border_type = SPRITESHEET_BORDER_TYPES.find(options[OPTION_SPRITESHEET_BORDER_TYPE])
 		trim = options[OPTION_SPRITESHEET_TRIM]
@@ -170,10 +170,10 @@ class ParsedAnimationOptions:
 		default_animation_direction = PRESET_OPTIONS_ANIMATION_DIRECTIONS.find(options[OPTION_ANIMATION_DEFAULT_DIRECTION])
 		default_animation_repeat_count = options[OPTION_ANIMATION_DEFAULT_REPEAT_COUNT]
 		animation_autoplay_name = options[OPTION_ANIMATION_AUTOPLAY_NAME].strip_edges().strip_escapes()
-		layers_include_regex = options[OPTION_LAYERS_INCLUDE_REG_EX]
-		layers_exclude_regex = options[OPTION_LAYERS_EXCLUDE_REG_EX]
-		tags_include_regex = options[OPTION_TAGS_INCLUDE_REG_EX]
-		tags_exclude_regex = options[OPTION_TAGS_EXCLUDE_REG_EX]
+#		layers_include_regex = options[OPTION_LAYERS_INCLUDE_REG_EX]
+#		layers_exclude_regex = options[OPTION_LAYERS_EXCLUDE_REG_EX]
+#		tags_include_regex = options[OPTION_TAGS_INCLUDE_REG_EX]
+#		tags_exclude_regex = options[OPTION_TAGS_EXCLUDE_REG_EX]
 
 # It's a pity, but options typed PROPERTY_HINT_ENUM cannot be cast to a numeric type today (2023.04.09),
 # because there is some kind of bug in the engine. Because of it, the first initialization

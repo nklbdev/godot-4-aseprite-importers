@@ -106,7 +106,7 @@ const __sheet_types_by_spritesheet_layout: Dictionary = {
 	Common.SpritesheetLayout.BY_COLUMNS: "columns",
 }
 
-func _export_texture(source_file: String, options: Common.Options, image_options: Dictionary, gen_files: Array[String], use_padding_instead_extrusion: bool = false) -> ExportResult:
+func _export_texture(source_file: String, options: Common.Options, image_options: Dictionary, gen_files: Array[String]) -> ExportResult:
 	var spritesheet_metadata = SpritesheetMetadata.new()
 	var png_path: String = source_file.get_basename() + ".png"
 	var global_png_path: String = ProjectSettings.globalize_path(png_path)
@@ -121,8 +121,11 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 		variable_options += ["--sheet-columns", str(options.spritesheet_fixed_columns_count)]
 	if options.spritesheet_layout == Common.SpritesheetLayout.BY_COLUMNS:
 		variable_options += ["--sheet-rows", str(options.spritesheet_fixed_rows_count)]
-	if options.extrude:
-		variable_options += ["--inner-padding", "1"] if use_padding_instead_extrusion else ["--extrude"]
+	match options.border_type:
+		Common.BorderType.Transparent: variable_options += ["--inner-padding", "1"]
+		Common.BorderType.Extruded: variable_options += ["--extrude"]
+		Common.BorderType.None: pass
+		_: push_error("unexpected border type")
 	if options.ignore_empty: variable_options += ["--ignore-empty"]
 	if options.merge_duplicates: variable_options += ["--merge-duplicates"]
 	if options.trim: variable_options += ["--trim" if options.spritesheet_layout == Common.SpritesheetLayout.PACKED else "--trim-sprite"]
@@ -138,6 +141,7 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 		"--sheet", global_png_path,
 		ProjectSettings.globalize_path(source_file)
 	])
+	print(command_line_params)
 
 	var output: Array = []
 	var err: Error = OS.execute(
@@ -157,7 +161,7 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 			frame_data.frame.w, frame_data.frame.h)
 		fd.region_rect_offset = Vector2i(
 			frame_data.spriteSourceSize.x, frame_data.spriteSourceSize.y)
-		if use_padding_instead_extrusion:
+		if options.border_type == Common.BorderType.Transparent:
 			fd.region_rect = fd.region_rect.grow(-1)
 			fd.region_rect_offset += Vector2i.ONE
 		fd.duration_ms = frame_data.duration

@@ -43,7 +43,7 @@ func _init(parent_plugin: EditorPlugin) -> void:
 	_recognized_extensions = ["ase", "aseprite"]
 	_resource_type = "PackedScene"
 	_save_extension = "scn"
-	_visible_name = "Sprite2D"
+	_visible_name = "Sprite2D (with AnimationPlayer)"
 
 	set_preset("Animation", [
 		Common.create_option(OPTION_SPRITE2D_CENTERED, true, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
@@ -70,9 +70,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	var common_options: Common.Options = Common.Options.new(options)
 	var centered = options[OPTION_SPRITE2D_CENTERED]
 
-	var use_padding_instead_extrusion = options[OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY] in \
-		[GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX, GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS]
-	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files, use_padding_instead_extrusion)
+	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files)
 
 	var sprite: Sprite2D = Sprite2D.new()
 	sprite.name = source_file.get_file().get_basename()
@@ -91,7 +89,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 					animation_player = _create_animation_player(ssmd, {
 						".:offset": func (frame_data: FrameData) -> Vector2:
 							return frame_data.region_rect_offset + \
-								((frame_data.region_rect.size - ssmd.source_size) if centered else Vector2.ZERO) * 0.5,
+								((frame_data.region_rect.size - ssmd.source_size) if centered else Vector2i.ZERO) / 2,
 						".:region_rect" : func (frame_data: FrameData) -> Rect2i:
 							return frame_data.region_rect },
 						autoplay)
@@ -135,7 +133,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 					sprite.region_enabled = true
 					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
 					sprite.offset = random_frame_data.region_rect_offset + \
-						((random_frame_data.region_rect.size - ssmd.source_size) if centered else Vector2.ZERO) * 0.5
+						((random_frame_data.region_rect.size - ssmd.source_size) if centered else Vector2i.ZERO) / 2
 					animation_player = _create_animation_player(ssmd, {
 						".:region_rect" : func (frame_data: FrameData) -> Rect2i:
 							return frame_data.region_rect },
@@ -144,7 +142,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 				GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX:
 					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
 					var grid_cell_size: Vector2i = random_frame_data.region_rect.size
-					if common_options.extrude:
+					if common_options.border_type == Common.BorderType.Extruded:
 						grid_cell_size += Vector2i.ONE * 2
 					match common_options.spritesheet_layout:
 						Common.SpritesheetLayout.BY_ROWS:
@@ -168,7 +166,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 				GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS:
 					var random_frame_data: FrameData = ssmd.animation_tags[0].frames[0]
 					var grid_cell_size: Vector2i = random_frame_data.region_rect.size
-					if common_options.extrude:
+					if common_options.border_type == Common.BorderType.Extruded:
 						grid_cell_size += Vector2i.ONE * 2
 					match common_options.spritesheet_layout:
 						Common.SpritesheetLayout.BY_ROWS:

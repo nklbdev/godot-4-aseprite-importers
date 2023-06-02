@@ -110,6 +110,13 @@ static func create_option(
 	if get_is_visible != EMPTY_CALLABLE: option_data["get_is_visible"] = get_is_visible
 	return option_data
 
+enum BorderType {
+	None = 0,
+	Transparent = 1,
+	Extruded = 2
+}
+const SPRITESHEET_BORDER_TYPES: PackedStringArray = ["None", "Transparent", "Extruded"]
+
 enum AnimationDirection {
 	FORWARD = 0,
 	REVERSE = 1,
@@ -124,7 +131,7 @@ const PRESET_OPTIONS_ANIMATION_DIRECTIONS: PackedStringArray = [
 enum SpritesheetLayout { PACKED, BY_ROWS, BY_COLUMNS }
 const SPRITESHEET_LAYOUTS: PackedStringArray = ["Packed", "By rows", "By columns"]
 
-const OPTION_SPRITESHEET_EXTRUDE: String = "spritesheet/extrude_(if_possible_or_add_transparent_border)"
+const OPTION_SPRITESHEET_BORDER_TYPE: String = "spritesheet/border_type"
 const OPTION_SPRITESHEET_TRIM: String = "spritesheet/trim"
 const OPTION_SPRITESHEET_IGNORE_EMPTY: String = "spritesheet/ignore_empty"
 const OPTION_SPRITESHEET_MERGE_DUPLICATES: String = "spritesheet/merge_duplicates"
@@ -144,7 +151,7 @@ const SPRITESHEET_FIXED_COLUMNS_COUNT: String = "spritesheet/fixed_columns_count
 
 
 class Options:
-	var extrude: bool
+	var border_type: BorderType
 	var trim: bool
 	var ignore_empty: bool
 	var merge_duplicates: bool
@@ -160,7 +167,7 @@ class Options:
 	var tags_include_regex: String
 	var tags_exclude_regex: String
 	func _init(options: Dictionary) -> void:
-		extrude = options[OPTION_SPRITESHEET_EXTRUDE]
+		border_type = SPRITESHEET_BORDER_TYPES.find(options[OPTION_SPRITESHEET_BORDER_TYPE])
 		trim = options[OPTION_SPRITESHEET_TRIM]
 		ignore_empty = options[OPTION_SPRITESHEET_IGNORE_EMPTY]
 		merge_duplicates = options[OPTION_SPRITESHEET_MERGE_DUPLICATES]
@@ -185,7 +192,7 @@ class Options:
 # https://github.com/godotengine/godot/blob/e9c7b8d2246bd0797af100808419c994fa43a9d2/editor/editor_file_system.cpp#L1855
 static func create_common_options() -> Array[Dictionary]:
 	return [
-		create_option(OPTION_SPRITESHEET_EXTRUDE, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_SPRITESHEET_BORDER_TYPE, SPRITESHEET_BORDER_TYPES[BorderType.None], PROPERTY_HINT_ENUM, ",".join(SPRITESHEET_BORDER_TYPES), PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_SPRITESHEET_TRIM, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_SPRITESHEET_IGNORE_EMPTY, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_SPRITESHEET_MERGE_DUPLICATES, false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),

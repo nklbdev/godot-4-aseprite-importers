@@ -1,6 +1,9 @@
 @tool
 extends "_base.gd"
 
+# POSSIBLE ANIMATION STRATEGIES:
+# - atlas texture instances
+
 func _init(parent_plugin: EditorPlugin) -> void:
 	super(parent_plugin)
 	_import_order = 0
@@ -41,7 +44,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	sprite_frames.emit_changed()
 	return status
 
-static func update_sprite_frames(export_result: ExportResult, sprite_frames: SpriteFrames) -> Error:
+static func update_sprite_frames(export_result: ExportResult, sprite_frames: SpriteFrames, animation_autoplay_name: String = "") -> Error:
 	var spritesheet_metadata: SpritesheetMetadata = export_result.spritesheet_metadata
 	var exported_animation_names: Array = export_result.spritesheet_metadata.animation_tags.map(
 		func (at: AnimationTag) -> String: return at.name)

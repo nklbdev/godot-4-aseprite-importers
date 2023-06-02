@@ -1,6 +1,9 @@
 @tool
 extends "_base.gd"
 
+# POSSIBLE ANIMATION STRATEGIES:
+# - atlas texture instances
+
 const SpriteFramesImporter = preload("sprite_frames.gd")
 
 func _init(parent_plugin: EditorPlugin) -> void:
@@ -52,6 +55,13 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 	status = SpriteFramesImporter.update_sprite_frames(export_result, sprite_frames)
 	if status: push_error("Cannot update SpriteFrames", status); return status
+
+	if not common_options.animation_autoplay_name.is_empty():
+		if sprite_frames.has_animation(common_options.animation_autoplay_name):
+			animated_sprite.autoplay = common_options.animation_autoplay_name
+		else:
+			push_warning("Not found animation to set autoplay with name \"%s\"" %
+				common_options.animation_autoplay_name)
 
 	packed_animated_sprite.pack(animated_sprite)
 

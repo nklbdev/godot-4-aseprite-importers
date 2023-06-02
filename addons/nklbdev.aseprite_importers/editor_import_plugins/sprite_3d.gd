@@ -1,20 +1,26 @@
 @tool
 extends "_base.gd"
 
+# POSSIBLE ANIMATION STRATEGIES:
+# - region and offset
+# - frame index ! only for grid-based spritesheets !
+# - atlas texture's region and margin
+# - atlas texture instances
+
 const OPTION_SPRITE3D_CENTERED: String = "sprite3d/centered"
 
-const OPTION_ANIMATION_STRATEGY: String = "animation/strategy"
-
-const ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET: String = "Animate sprite's region and offset"
-const ANIMATION_STRATEGY_SPRITE_FRAME_INDEX: String = "Animate sprite's frame index"
-const ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
-const ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
-const ANIMATION_STRATEGIES: PackedStringArray = [
-	ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
-	ANIMATION_STRATEGY_SPRITE_FRAME_INDEX,
-	ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
-	ANIMATION_STRATEGY_TEXTURE_INSTANCES,
-]
+#const OPTION_ANIMATION_STRATEGY: String = "animation/strategy"
+#
+#const ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET: String = "Animate sprite's region and offset"
+#const ANIMATION_STRATEGY_SPRITE_FRAME_INDEX: String = "Animate sprite's frame index"
+#const ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
+#const ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
+#const ANIMATION_STRATEGIES: PackedStringArray = [
+#	ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
+#	ANIMATION_STRATEGY_SPRITE_FRAME_INDEX,
+#	ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
+#	ANIMATION_STRATEGY_TEXTURE_INSTANCES,
+#]
 
 func _init(parent_plugin: EditorPlugin) -> void:
 	super(parent_plugin)
@@ -28,7 +34,7 @@ func _init(parent_plugin: EditorPlugin) -> void:
 
 	set_preset("Animation", [
 		Common.create_option(OPTION_SPRITE3D_CENTERED, PROPERTY_HINT_NONE, "", true, PROPERTY_USAGE_EDITOR),
-		Common.create_option(OPTION_ANIMATION_STRATEGY, PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), ANIMATION_STRATEGIES[0], PROPERTY_USAGE_EDITOR)
+#		Common.create_option(OPTION_ANIMATION_STRATEGY, PROPERTY_HINT_ENUM, ",".join(ANIMATION_STRATEGIES), ANIMATION_STRATEGIES[0], PROPERTY_USAGE_EDITOR)
 	])
 
 func _import(source_file: String, save_path: String, options: Dictionary,
@@ -46,18 +52,20 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	sprite.region_enabled = true
 
 	var spritesheet_metadata = export_result.spritesheet_metadata
-	var frame_half_size: Vector2 = spritesheet_metadata.source_size / 2.0
 	var animation_player = _create_animation_player(
 		spritesheet_metadata, {
 			".:offset": func (frame_data: FrameData) -> Vector2:
-				return Vector2(
+				return Vector2( # spatial sprite offset (the Y-axis is Up-directed)
 					frame_data.region_rect_offset.x,
-					animation_
-				)
-				return frame_data.region_rect_offset + \
-					((frame_data.region_rect.size - spritesheet_metadata.source_size) if centered else 0) / 2.0,
+					spritesheet_metadata.source_size.y -
+					frame_data.region_rect_offset.y -
+					frame_data.region_rect.size.y) + \
+					# add center correction
+					((frame_data.region_rect.size - spritesheet_metadata.source_size) * 0.5
+					if centered else Vector2.ZERO),
 			".:region_rect" : func (frame_data: FrameData) -> Rect2i:
-				return frame_data.region_rect })
+				return frame_data.region_rect },
+		common_options.animation_autoplay_name)
 
 	sprite.add_child(animation_player)
 	animation_player.owner = sprite

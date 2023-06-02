@@ -2,7 +2,6 @@
 extends EditorImportPlugin
 
 const Common = preload("../common.gd")
-const AsepriteDriver = preload("../aseprite_driver.gd")
 
 func set_preset(name: StringName, options: Array[Dictionary]) -> void:
 	var preset: Array[Dictionary] = []
@@ -73,7 +72,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 class ExportResult:
 	var raw_output: String
 	var parsed_json: JSON
-	var texture: Texture
+	var texture: Texture2D
 	var spritesheet_metadata: SpritesheetMetadata
 
 class FrameData:
@@ -120,7 +119,7 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 			"--list-tags",
 			"--ignore-empty",
 			"--trim",
-			"--inner-padding", "1" if options.extrude else "0",
+			"--extrude" if options.extrude else "",
 			"--sheet-type", "packed",
 			"--sheet", global_png_path,
 			ProjectSettings.globalize_path(source_file)
@@ -136,8 +135,6 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 		fd.region_rect = Rect2i(
 			frame_data.frame.x, frame_data.frame.y,
 			frame_data.frame.w, frame_data.frame.h)
-		if options.extrude:
-			fd.region_rect = fd.region_rect.grow(-1)
 		fd.region_rect_offset = Vector2i(
 			frame_data.spriteSourceSize.x, frame_data.spriteSourceSize.y)
 		fd.duration_ms = frame_data.duration
@@ -188,8 +185,6 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 			spritesheet_metadata.animation_tags.append(animation_tag)
 
 	var image = Image.load_from_file(global_png_path)
-	if options.extrude:
-		__extrude_edges_into_padding(image, frames_data)
 	image.save_png(global_png_path)
 	image = null
 
@@ -209,27 +204,10 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 	export_result.spritesheet_metadata = spritesheet_metadata
 	return export_result
 
-static func __extrude_edges_into_padding(image: Image, frames_data: Array[FrameData]):
-	for frame_data in frames_data:
-		frame_data = frame_data as FrameData
-		var tr = frame_data.region_rect
-		# Setting upper and lower pixels
-		for x in range(frame_data.region_rect.position.x, frame_data.region_rect.end.x):
-			image.set_pixel(x, tr.position.y - 1, image.get_pixel(x, tr.position.y))
-			image.set_pixel(x, tr.end.y, image.get_pixel(x, tr.end.y - 1))
-		# Setting left and right pixels
-		for y in range(frame_data.region_rect.position.y, frame_data.region_rect.end.y):
-			image.set_pixel(tr.position.x - 1, y, image.get_pixel(tr.position.x, y))
-			image.set_pixel(tr.end.x, y, image.get_pixel(tr.end.x - 1, y))
-		# Setting corner pixels
-		image.set_pixelv(tr.position - Vector2i.ONE, image.get_pixelv(tr.position))
-		image.set_pixelv(Vector2i(tr.end.x, tr.position.y - 1), image.get_pixelv(Vector2i(tr.end.x - 1, tr.position.y)))
-		image.set_pixelv(Vector2i(tr.position.x - 1, tr.end.y), image.get_pixelv(Vector2i(tr.position.x, tr.end.y - 1)))
-		image.set_pixelv(tr.end, image.get_pixelv(tr.end - Vector2i.ONE))
-
 static func _create_animation_player(
 	spritesheet_metadata: SpritesheetMetadata,
-	track_value_getters_by_property_path: Dictionary
+	track_value_getters_by_property_path: Dictionary,
+	animation_autoplay_name: String = ""
 	) -> AnimationPlayer:
 	var animation_player: AnimationPlayer = AnimationPlayer.new()
 	animation_player.name = "AnimationPlayer"
@@ -248,13 +226,21 @@ static func _create_animation_player(
 		animation.loop_mode = Animation.LOOP_LINEAR if animation_tag.looped else Animation.LOOP_NONE
 		animation_library.add_animation(animation_tag.name, animation)
 	animation_player.add_animation_library("", animation_library)
+
+	if not animation_autoplay_name.is_empty():
+		if animation_player.has_animation(animation_autoplay_name):
+			animation_player.autoplay = animation_autoplay_name
+		else:
+			push_warning("Not found animation to set autoplay with name \"%s\"" %
+				animation_autoplay_name)
+
 	return animation_player
 
 static func __create_track(
 	animation: Animation,
 	property_path: NodePath,
 	animation_tag: AnimationTag,
-	track_value_getter: Callable # from FrameData from animation_tag.frames
+	track_value_getter: Callable # func(fd: FrameData) -> Variant for each fd in animation_tag.frames
 	) -> int:
 	var track_index = animation.add_track(Animation.TYPE_VALUE)
 	animation.track_set_path(track_index, property_path)

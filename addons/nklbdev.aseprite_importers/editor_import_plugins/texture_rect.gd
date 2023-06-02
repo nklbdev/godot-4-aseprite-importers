@@ -1,6 +1,10 @@
 @tool
 extends "_base.gd"
 
+# POSSIBLE ANIMATION STRATEGIES:
+# - atlas texture's region and margin
+# - atlas texture instances
+
 const OPTION_ANIMATION_STRATEGY: String = "animation/strategy"
 
 const ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
@@ -42,12 +46,35 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	texture_rect.texture = atlas_texture
 
 	var frame_size: Vector2i = export_result.spritesheet_metadata.source_size
+
+	# STRATEGY ANIMATE ATLAS TEXTURE'S REGION AND MARGIN
+#	var animation_player = _create_animation_player(
+#		export_result.spritesheet_metadata, {
+#			".:texture:margin": func (frame_data: FrameData) -> Rect2:
+#				return Rect2(frame_data.region_rect_offset, frame_size - frame_data.region_rect.size),
+#			".:texture:region" : func (frame_data: FrameData) -> Rect2i:
+#				return  frame_data.region_rect },
+#		common_options.animation_autoplay_name)
+
+	# STRATEGY ANIMATE TEXTURE
+	var texture_cache: Array[AtlasTexture]
 	var animation_player = _create_animation_player(
 		export_result.spritesheet_metadata, {
-			".:texture:margin": func (frame_data: FrameData) -> Rect2:
-				return Rect2(frame_data.region_rect_offset, frame_size - frame_data.region_rect.size),
-			".:texture:region" : func (frame_data: FrameData) -> Rect2i:
-				return  frame_data.region_rect })
+			".:texture": func (frame_data: FrameData) -> Texture2D:
+				var margin = Rect2(frame_data.region_rect_offset, frame_size - frame_data.region_rect.size)
+				var region = Rect2(frame_data.region_rect)
+				var cached_result = texture_cache.filter(func (t: AtlasTexture) -> bool: return t.margin == margin and t.region == region)
+				var texture: AtlasTexture
+				if not cached_result.is_empty():
+					return cached_result.front()
+				texture = AtlasTexture.new()
+				texture.atlas = export_result.texture
+				texture.filter_clip = true
+				texture.margin = margin
+				texture.region = region
+				texture_cache.append(texture)
+				return texture},
+		common_options.animation_autoplay_name)
 
 	texture_rect.add_child(animation_player)
 	animation_player.owner = texture_rect
@@ -64,7 +91,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	status = ResourceSaver.save(
 		packed_sprite,
 		save_path + "." + _get_save_extension(),
-		ResourceSaver.FLAG_COMPRESS)
+		ResourceSaver.FLAG_COMPRESS | ResourceSaver.FLAG_BUNDLE_RESOURCES)
 	if status: push_error("Can't save imported resource.", status)
 
 	packed_sprite.emit_changed()

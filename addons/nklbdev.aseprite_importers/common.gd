@@ -125,6 +125,8 @@ const OPTION_SPRITESHEET_LAYOUT: String = "spritesheet/layout"
 const OPTION_ANIMATION_DEFAULT_NAME: String = "animation/default/name"
 const OPTION_ANIMATION_DEFAULT_DIRECTION: String = "animation/default/direction"
 const OPTION_ANIMATION_DEFAULT_REPEAT_COUNT: String = "animation/default/repeat_count"
+const OPTION_ANIMATION_AUTOPLAY_NAME: String = "animation/autoplay"
+const OPTION_ANIMATION_STRATEGY: String = "animation/strategy"
 const OPTION_LAYERS_INCLUDE_REG_EX: String = "layers/include_reg_ex"
 const OPTION_LAYERS_EXCLUDE_REG_EX: String = "layers/exclude_reg_ex"
 const OPTION_TAGS_INCLUDE_REG_EX: String = "tags/include_reg_ex"
@@ -140,6 +142,8 @@ class Options:
 	var default_animation_name: String
 	var default_animation_direction: AnimationDirection
 	var default_animation_repeat_count: int
+	var animation_autoplay_name: String
+	#var animation_strategy: String
 	var layers_include_regex: String
 	var layers_exclude_regex: String
 	var tags_include_regex: String
@@ -151,6 +155,8 @@ class Options:
 		if default_animation_name.is_empty(): default_animation_name = "default"
 		default_animation_direction = PRESET_OPTIONS_ANIMATION_DIRECTIONS.find(options[OPTION_ANIMATION_DEFAULT_DIRECTION])
 		default_animation_repeat_count = options[OPTION_ANIMATION_DEFAULT_REPEAT_COUNT]
+		animation_autoplay_name = options[OPTION_ANIMATION_AUTOPLAY_NAME].strip_edges().strip_escapes()
+		# animation_strategy = /*select enum value*/ options[OPTION_ANIMATION_STRATEGY]
 		layers_include_regex = options[OPTION_LAYERS_INCLUDE_REG_EX]
 		layers_exclude_regex = options[OPTION_LAYERS_EXCLUDE_REG_EX]
 		tags_include_regex = options[OPTION_TAGS_INCLUDE_REG_EX]
@@ -173,6 +179,7 @@ static func create_common_options() -> Array[Dictionary]:
 		create_option(OPTION_ANIMATION_DEFAULT_NAME, PROPERTY_HINT_PLACEHOLDER_TEXT, "default", "default", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_ANIMATION_DEFAULT_DIRECTION, PROPERTY_HINT_ENUM, ",".join(PRESET_OPTIONS_ANIMATION_DIRECTIONS), PRESET_OPTIONS_ANIMATION_DIRECTIONS[0], PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_ANIMATION_DEFAULT_REPEAT_COUNT, PROPERTY_HINT_RANGE, "0,32,1,or_greater", 0, PROPERTY_USAGE_EDITOR),
+		create_option(OPTION_ANIMATION_AUTOPLAY_NAME, PROPERTY_HINT_NONE, "", "", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_LAYERS_INCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "*", "*", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_LAYERS_EXCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "", "", PROPERTY_USAGE_EDITOR),
 		create_option(OPTION_TAGS_INCLUDE_REG_EX, PROPERTY_HINT_PLACEHOLDER_TEXT, "*", "*", PROPERTY_USAGE_EDITOR),

@@ -152,20 +152,19 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	texture_rect.add_child(animation_player)
 	animation_player.owner = texture_rect
 
-	var packed_sprite: PackedScene
+	var packed_scene: PackedScene
 	if ResourceLoader.exists(source_file):
 		# This is a working way to reuse a previously imported resource. Don't change it!
-		packed_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
-	if not packed_sprite:
-		packed_sprite = PackedScene.new()
+		packed_scene = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
+	if not packed_scene:
+		packed_scene = PackedScene.new()
 
-	packed_sprite.pack(texture_rect)
+	packed_scene.pack(texture_rect)
 
 	status = ResourceSaver.save(
-		packed_sprite,
+		packed_scene,
 		save_path + "." + _get_save_extension(),
 		ResourceSaver.FLAG_COMPRESS | ResourceSaver.FLAG_BUNDLE_RESOURCES)
 	if status: push_error("Can't save imported resource.", status)
 
-	packed_sprite.emit_changed()
 	return status

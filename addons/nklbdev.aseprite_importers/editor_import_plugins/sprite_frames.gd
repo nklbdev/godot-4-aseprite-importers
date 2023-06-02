@@ -23,7 +23,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	var sprite_frames: SpriteFrames
 	if ResourceLoader.exists(source_file):
 		# This is a working way to reuse a previously imported resource. Don't change it!
-		sprite_frames = ResourceLoader.load(source_file, "SpriteFrames", ResourceLoader.CACHE_MODE_IGNORE) as SpriteFrames
+		sprite_frames = ResourceLoader.load(source_file, "SpriteFrames", ResourceLoader.CACHE_MODE_REPLACE) as SpriteFrames
 	if not sprite_frames:
 		sprite_frames = SpriteFrames.new()
 
@@ -38,7 +38,6 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 		ResourceSaver.FLAG_COMPRESS)
 	if status:
 		push_error("Can't save imported resource.", status)
-	sprite_frames.emit_changed()
 	return status
 
 static func update_sprite_frames(export_result: ExportResult, sprite_frames: SpriteFrames, animation_autoplay_name: String = "") -> Error:

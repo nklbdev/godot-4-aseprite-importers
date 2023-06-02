@@ -1,16 +1,7 @@
 extends Object
 
-const AUTHOR: StringName = "nklbdev"
 const PLUGIN_BUNDLE_NAME: StringName = "aseprite_importers"
-const PLUGIN_DIR: StringName = "res://addons/" + AUTHOR + "." + PLUGIN_BUNDLE_NAME
-const IMPORT_PLUGINS_DIR: StringName = PLUGIN_DIR + "/editor_import_plugins"
 const ASEPRITE_EXECUTABLE_PATH_SETTING_NAME: StringName = PLUGIN_BUNDLE_NAME + "/aseprite_executable_path"
-
-enum Presets {
-	AUTODETECT_2D3D,
-	FOR_2D,
-	FOR_3D
-}
 
 enum CompressMode {
 	LOSSLESS,

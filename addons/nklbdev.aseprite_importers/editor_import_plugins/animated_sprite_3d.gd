@@ -23,16 +23,16 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	var common_options: Common.Options = Common.Options.new(options)
 	var export_result: ExportResult = _export_texture(source_file, common_options, options, gen_files)
 
-	var packed_animated_sprite: PackedScene
+	var packed_scene: PackedScene
 	var animated_sprite: AnimatedSprite3D
 	var sprite_frames: SpriteFrames
 
 	if ResourceLoader.exists(source_file):
 		# This is a working way to reuse a previously imported resource. Don't change it!
-		packed_animated_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
+		packed_scene = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 
-	if packed_animated_sprite and packed_animated_sprite.can_instantiate():
-		animated_sprite = packed_animated_sprite.instantiate() as AnimatedSprite3D
+	if packed_scene and packed_scene.can_instantiate():
+		animated_sprite = packed_scene.instantiate() as AnimatedSprite3D
 
 	if animated_sprite:
 		sprite_frames = animated_sprite.sprite_frames
@@ -46,8 +46,8 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 	animated_sprite.sprite_frames = sprite_frames
 
-	if not packed_animated_sprite:
-		packed_animated_sprite = PackedScene.new()
+	if not packed_scene:
+		packed_scene = PackedScene.new()
 
 
 	status = SpriteFramesImporter.update_sprite_frames(export_result, sprite_frames)
@@ -60,10 +60,9 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 			push_warning("Not found animation to set autoplay with name \"%s\"" %
 				common_options.animation_autoplay_name)
 
-	packed_animated_sprite.pack(animated_sprite)
+	packed_scene.pack(animated_sprite)
 
-	status = ResourceSaver.save(packed_animated_sprite, save_path + "." + _get_save_extension(), ResourceSaver.FLAG_COMPRESS)
+	status = ResourceSaver.save(packed_scene, save_path + "." + _get_save_extension(), ResourceSaver.FLAG_COMPRESS)
 	if status: push_error("Can't save imported resource.", status); return status
 
-	packed_animated_sprite.emit_changed()
 	return status

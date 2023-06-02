@@ -184,11 +184,11 @@ class Options:
 		tags_include_regex = options[OPTION_TAGS_INCLUDE_REG_EX]
 		tags_exclude_regex = options[OPTION_TAGS_EXCLUDE_REG_EX]
 
-# К интам привести опции-перечисления увы, не получится. Потому что в движке есть какой-то баг,
-# из-за которого первая инициализация значением по умолчанию происходит
-# в виде строки кэпшена первого элемента, переданного в запакованном HintString
-# После изменения опции в редакторе уже проставляется нормальный INT. Надеюсь, скоро починят
-# Проблема находится примерно здесь:
+# It's a pity, but options typed PROPERTY_HINT_ENUM cannot be cast to a numeric type today (2023.04.09),
+# because there is some kind of bug in the engine. Because of it, the first initialization
+# with a default value occurs with string value of the first element passed in the HintString.
+# After changing the option in the editor, the normal numeric value is already set. Hope this gets fixed soon.
+# The problem is located here:
 # https://github.com/godotengine/godot/blob/e9c7b8d2246bd0797af100808419c994fa43a9d2/editor/editor_file_system.cpp#L1855
 static func create_common_options() -> Array[Dictionary]:
 	return [
@@ -211,7 +211,6 @@ static func create_common_options() -> Array[Dictionary]:
 		create_option(OPTION_TAGS_EXCLUDE_REG_EX, "", PROPERTY_HINT_PLACEHOLDER_TEXT, "", PROPERTY_USAGE_EDITOR)
 	]
 
-# TODO: Убрать отсюда неподходящие варианты, например, Bitmap
 static func create_texture_2d_options() -> Array[Dictionary]:
 	return [
 		create_option("compress/mode", COMPRESS_MODES_NAMES[CompressMode.LOSSLESS], PROPERTY_HINT_ENUM, ",".join(COMPRESS_MODES_NAMES),
@@ -225,7 +224,7 @@ static func create_texture_2d_options() -> Array[Dictionary]:
 		create_option("compress/normal_map", NORMAL_MAP_NAMES[NormalMap.DETECT], PROPERTY_HINT_ENUM, ",".join(NORMAL_MAP_NAMES), PROPERTY_USAGE_EDITOR,
 			func(options): return options["compress/mode"] != COMPRESS_MODES_NAMES[CompressMode.LOSSLESS]),
 		create_option("compress/channel_pack", ChannelPack.SRGB_FRIENDLY, PROPERTY_HINT_ENUM, ",".join(CHANNEL_PACK_NAMES),
-			PROPERTY_USAGE_EDITOR), # everywhere
+			PROPERTY_USAGE_EDITOR),
 
 		create_option("mipmaps/generate", false, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		# STRANGE! Appears only on 3D preset. Independently from other properties

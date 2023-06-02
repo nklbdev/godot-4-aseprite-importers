@@ -1,9 +1,6 @@
 @tool
-extends "_base.gd"
+extends "_animation_importer_base.gd"
 
-# POSSIBLE ANIMATION STRATEGIES:
-# - atlas texture's region and margin
-# - atlas texture instances
 
 const OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(packed_spritesheet)"
 
@@ -26,9 +23,6 @@ const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
 	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION,
 	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
-
-
-
 
 
 
@@ -96,11 +90,6 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 			match options[OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY]:
 
 				PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN:
-#					var atlas_texture: AtlasTexture = AtlasTexture.new()
-#					atlas_texture.filter_clip = true
-#					atlas_texture.resource_local_to_scene = true
-#					atlas_texture.atlas = sprite.texture
-#					sprite.texture = atlas_texture
 					animation_player = _create_animation_player(ssmd, {
 						".:texture:margin": func (frame_data: FrameData) -> Rect2:
 							return Rect2(frame_data.region_rect_offset, ssmd.source_size - frame_data.region_rect.size),
@@ -165,7 +154,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 	var packed_sprite: PackedScene
 	if ResourceLoader.exists(source_file):
-		# НУЖНО ИМЕННО ТАК. IGNORE... или REPLACE!!!!!!!!!!!!
+		# This is a working way to reuse a previously imported resource. Don't change it!
 		packed_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 	if not packed_sprite:
 		packed_sprite = PackedScene.new()

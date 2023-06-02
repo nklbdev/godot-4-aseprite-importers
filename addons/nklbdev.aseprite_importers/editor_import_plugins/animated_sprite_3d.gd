@@ -1,8 +1,5 @@
 @tool
-extends "_base.gd"
-
-# POSSIBLE ANIMATION STRATEGIES:
-# - atlas texture instances
+extends "_animation_importer_base.gd"
 
 const SpriteFramesImporter = preload("sprite_frames.gd")
 
@@ -31,7 +28,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	var sprite_frames: SpriteFrames
 
 	if ResourceLoader.exists(source_file):
-		# НУЖНО ИМЕННО ТАК. IGNORE... или REPLACE!!!!!!!!!!!!
+		# This is a working way to reuse a previously imported resource. Don't change it!
 		packed_animated_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 
 	if packed_animated_sprite and packed_animated_sprite.can_instantiate():

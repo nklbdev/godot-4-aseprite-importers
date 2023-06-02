@@ -218,12 +218,13 @@ func _export_texture(source_file: String, options: Common.Options, image_options
 	image.save_png(global_png_path)
 	image = null
 
-	# Эта функция не импортирует файл. Но ее вызов нужен для того, чтобы append прошел без ошибок
+    # This function does not import the file. But its call is needed
+	# so that the call to the "append" function passes without errors
 	_parent_plugin.get_editor_interface().get_resource_filesystem().update_file(png_path)
 	append_import_external_resource(png_path, image_options, "texture")
 	gen_files.append(png_path)
 
-	# НУЖНО ИМЕННО ТАК. IGNORE!!!!!!!!!!!!
+	# This is a working way to reuse a previously imported resource. Don't change it!
 	var texture: Texture2D = ResourceLoader.load(png_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
 	texture.emit_changed()
 

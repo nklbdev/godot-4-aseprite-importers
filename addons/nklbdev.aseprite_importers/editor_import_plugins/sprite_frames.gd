@@ -1,8 +1,5 @@
 @tool
-extends "_base.gd"
-
-# POSSIBLE ANIMATION STRATEGIES:
-# - atlas texture instances
+extends "_animation_importer_base.gd"
 
 func _init(parent_plugin: EditorPlugin) -> void:
 	super(parent_plugin)
@@ -25,7 +22,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 	var sprite_frames: SpriteFrames
 	if ResourceLoader.exists(source_file):
-		# НУЖНО ИМЕННО ТАК. IGNORE... или REPLACE!!!!!!!!!!!!
+		# This is a working way to reuse a previously imported resource. Don't change it!
 		sprite_frames = ResourceLoader.load(source_file, "SpriteFrames", ResourceLoader.CACHE_MODE_IGNORE) as SpriteFrames
 	if not sprite_frames:
 		sprite_frames = SpriteFrames.new()

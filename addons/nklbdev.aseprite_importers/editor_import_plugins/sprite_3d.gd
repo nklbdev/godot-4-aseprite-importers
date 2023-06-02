@@ -1,5 +1,5 @@
 @tool
-extends "_base.gd"
+extends "_animation_importer_base.gd"
 
 const OPTION_SPRITE3D_CENTERED: String = "sprite3d/centered"
 
@@ -95,9 +95,6 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 								# add center correction
 								((frame_data.region_rect.size - ssmd.source_size) * 0.5
 								if centered else Vector2.ZERO),
-#						".:offset": func (frame_data: FrameData) -> Vector2:
-#							return frame_data.region_rect_offset + \
-#								((frame_data.region_rect.size - ssmd.source_size) if centered else Vector2i.ZERO) / 2,
 						".:region_rect" : func (frame_data: FrameData) -> Rect2i:
 							return frame_data.region_rect },
 						autoplay)
@@ -223,7 +220,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 	var packed_sprite: PackedScene
 	if ResourceLoader.exists(source_file):
-		# НУЖНО ИМЕННО ТАК. IGNORE... или REPLACE!!!!!!!!!!!!
+		# This is a working way to reuse a previously imported resource. Don't change it!
 		packed_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 	if not packed_sprite:
 		packed_sprite = PackedScene.new()

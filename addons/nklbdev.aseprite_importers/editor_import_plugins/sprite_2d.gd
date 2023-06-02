@@ -1,8 +1,7 @@
 @tool
-extends "_base.gd"
+extends "_animation_importer_base.gd"
 
 const OPTION_SPRITE2D_CENTERED: String = "sprite2d/centered"
-
 
 
 const OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(packed_spritesheet)"
@@ -16,7 +15,6 @@ const PACKED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
 	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
 	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
 ]
-
 
 
 const OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(grid-based_spritesheet)"
@@ -216,7 +214,7 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 
 	var packed_sprite: PackedScene
 	if ResourceLoader.exists(source_file):
-		# НУЖНО ИМЕННО ТАК. IGNORE... или REPLACE!!!!!!!!!!!!
+		# This is a working way to reuse a previously imported resource. Don't change it!
 		packed_sprite = ResourceLoader.load(source_file, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE) as PackedScene
 	if not packed_sprite:
 		packed_sprite = PackedScene.new()

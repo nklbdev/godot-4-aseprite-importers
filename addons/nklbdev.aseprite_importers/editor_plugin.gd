@@ -1,12 +1,10 @@
 @tool
 extends EditorPlugin
 
-# TODO: разобраться с ошибкой:
-# editor/editor_node.cpp:8152 - Condition "plugins_list.has(p_plugin)" is true.
 
 const Common = preload("common.gd")
 const SettingsRegistry = preload("settings_registry.gd")
-const ImportPlugin = preload("editor_import_plugins/_base.gd")
+const ImportPlugin = preload("editor_import_plugins/_animation_importer_base.gd")
 
 var __import_plugins: Array[ImportPlugin]
 

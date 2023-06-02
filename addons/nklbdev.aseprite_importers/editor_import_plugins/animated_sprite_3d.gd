@@ -1,4 +1,3 @@
-@tool
 extends "_animation_importer_base.gd"
 
 const SpriteFramesImporter = preload("sprite_frames.gd")

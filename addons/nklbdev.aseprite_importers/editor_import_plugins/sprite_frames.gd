@@ -1,4 +1,3 @@
-@tool
 extends "_animation_importer_base.gd"
 
 func _init(parent_plugin: EditorPlugin) -> void:

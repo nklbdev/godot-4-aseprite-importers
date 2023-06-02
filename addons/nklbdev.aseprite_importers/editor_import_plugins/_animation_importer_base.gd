@@ -1,5 +1,6 @@
-@tool
-extends EditorImportPlugin
+extends "_importer_base.gd"
+
+# Base class for all nested animation import plugins
 
 const Common = preload("../common.gd")
 

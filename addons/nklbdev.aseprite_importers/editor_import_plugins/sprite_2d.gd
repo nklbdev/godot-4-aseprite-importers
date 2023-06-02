@@ -1,4 +1,3 @@
-@tool
 extends "_animation_importer_base.gd"
 
 const OPTION_SPRITE2D_CENTERED: String = "sprite2d/centered"

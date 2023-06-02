@@ -81,8 +81,8 @@ https://user-images.githubusercontent.com/7024016/236665418-fe8036b9-7de5-4608-a
 - **`Animate sprite's region`** - *анимирует свойство спрайта `region`*
 - **`Animate sprite's frame index`** - *анимирует свойство спрайта `frame`*
 - **`Animate sprite's frame coords`** - *анимирует свойство спрайта `frame_coords`*
-- **`Animate single atlas sexture's region`** - *анимирует свойство атлас-текстуры спрайта `region`*
-- **`Animate multiple atlas sexture instances`** - *создает по экземпляру атлас-текстуры на каждый уникальный фрейм и анимирует свойство спрайта `texture`, подставляя их в него одну за одной*
+- **`Animate single atlas texture's region`** - *анимирует свойство атлас-текстуры спрайта `region`*
+- **`Animate multiple atlas texture instances`** - *создает по экземпляру атлас-текстуры на каждый уникальный фрейм и анимирует свойство спрайта `texture`, подставляя их в него одну за одной*
 
 ##### При упакованной раскладке тайлов:
 
@@ -108,10 +108,12 @@ https://user-images.githubusercontent.com/7024016/236665418-fe8036b9-7de5-4608-a
 
 Если использовать формат ресурса `.tres` (текстовый), то встроенное изображение будет кодироваться в `Base64`, и займет еще в несколько раз больше места.
 
-#### Регулярные выражения для `Layers/Include`, `Layers/Exclude`, `Tags/Exclude` и `Tags/Exclude`
+#### Полный список планируемых функций:
 
-Планирую добавить настройку, позволяющую отфильтровать слои и тэги, которые нужно или не нужно импортировать
-
-#### Тип импортируемого ресурса `TileSetAtlasSource`
-
-Реализация сейчас упирается в поддержку нескольких размеров сеток и анимированных тайлов.
+- Опция включения полученного изображения листа тайлов в ресурс: **`Spritesheet/Embed Image: bool`**
+- Регулярные выражения для включения/исключения слоёв и тэгов: **`Layers/Include`**, **`Layers/Exclude`**, **`Tags/Exclude`** and **`Tags/Exclude`**
+- Импорт обычных ресурсов текстур: (**`TileSetAtlasSource`**, **`ImageTexture`**, **`CompressedTexture`**, **`PortableCompressedTexture`**, и **`AtlasTexture`**)
+- Импорт обычных спрайтов (`Sprite2D` и `Sprite3D` без анимации)
+- Импорт ресурса **`TileSetAtlasSource`**
+- Импорт ресурса **`NinePatchRect`**
+- И еще чего-нибудь, если будут интересные предложения от вас)))

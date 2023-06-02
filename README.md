@@ -81,8 +81,8 @@ Creates a `PackedScene` resources with an `AnimationPlayer` child node that anim
 - **`Animate sprite's region`** - *animates the `region` property of the sprite*
 - **`Animate sprite's frame index`** - *animates the `frame` property of the sprite*
 - **`Animate sprite's frame coords`** - *animates the `frame_coords` property of the sprite*
-- **`Animate single atlas sexture's region`** - *animates the `region` property of the atlas texture of the sprite*
-- **`Animate multiple atlas sexture instances`** - *instantiates an `AtlasTexture` per unique frame and animates the `texture` property of the sprite*
+- **`Animate single atlas texture's region`** - *animates the `region` property of the atlas texture of the sprite*
+- **`Animate multiple atlas texture instances`** - *instantiates an `AtlasTexture` per unique frame and animates the `texture` property of the sprite*
 
 ##### For packed spritesheet layout:
 - **`Animate sprite's region and offset`** - *animates the `region` and `offset` properties of the sprite*
@@ -101,4 +101,8 @@ If there will be error messages related directly to the import script - please c
 
 - Checkbox to embed image in resource **`Spritesheet/Embed Image: bool`**
 - Regular expressions for **`Layers/Include`**, **`Layers/Exclude`**, **`Tags/Exclude`** and **`Tags/Exclude`**
+- Import regular texture resources (**`TileSetAtlasSource`**, **`ImageTexture`**, **`CompressedTexture`**, **`PortableCompressedTexture`** and **`AtlasTexture`**)
+- Regular sprites (`Sprite2D` and `Sprite3D` without animation)
 - Import resource type **`TileSetAtlasSource`**
+- Import resource type **`NinePatchRect`**
+- And something else, if there are interesting proposals from you)))

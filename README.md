@@ -15,6 +15,8 @@ Alternatively download or clone this repository and copy the contents of the `a
 
 Then enable the plugin on the Project Settings and use new class in your scenes.
 
+Finally open Project Settings, turn on Advanced Settings toggle and specify the path to the Aisprite executable file in the Aseprite Importers section.
+
 ## 👷‍♀️ How to use
 
 After installing the plugin, the project will support `.ase`- and `.aseprite`-files.

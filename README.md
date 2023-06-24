@@ -13,9 +13,15 @@ Simply download it from [Godot Asset Library](https://godotengine.org/asset-libr
 
 Alternatively download or clone this repository and copy the contents of the `addons` folder to your own project's `addons` folder.
 
-Then enable the plugin on the Project Settings and use new class in your scenes.
+Then:
 
-Finally open Project Settings, turn on Advanced Settings toggle and specify the path to the Aisprite executable file in the Aseprite Importers section.
+- Go to Project Settings
+- Switch to the Plugins tab
+- Enable the plugin
+- Switch to the General tab
+- Turn on Advanced Settings toggle
+- Scroll down the settings tree and select Aseprite Importers section
+- Specify the path to Aseprite executable file
 
 ## 👷‍♀️ How to use
 

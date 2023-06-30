@@ -20,6 +20,10 @@ func _import(source_file: String, save_path: String, options: Dictionary,
 	var status: Error = OK
 	var parsed_options = Common.ParsedAnimationOptions.new(options)
 	var export_result: ExportResult = _export_texture(source_file, parsed_options, options, gen_files)
+	if export_result.error:
+		push_error("There was an error during exporting texture: %s with message: %s" %
+			[error_string(export_result.error), export_result.error_message])
+		return export_result.error
 
 	var packed_scene: PackedScene
 	var animated_sprite: AnimatedSprite3D

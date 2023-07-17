@@ -6,7 +6,6 @@ func set_preset(name: StringName, options: Array[Dictionary]) -> void:
 	var preset: Array[Dictionary] = []
 	preset.append_array(_parent_plugin.common_options)
 	preset.append_array(options)
-	preset.append_array(_parent_plugin.texture_2d_options)
 	__option_visibility_checkers.clear()
 	for option in preset:
 		var option_visibility_checker: Callable = option.get("get_is_visible", Common.EMPTY_CALLABLE)
@@ -179,7 +178,7 @@ func _export_texture(source_file: String, options: Common.ParsedAnimationOptions
 	# This is a working way to reuse a previously imported resource. Don't change it!
 	var texture: Texture2D = ResourceLoader.load(png_path, "Texture2D", ResourceLoader.CACHE_MODE_REPLACE) as Texture2D
 
-	
+
 	export_result.texture = texture
 	export_result.raw_output = data
 	export_result.parsed_json = json

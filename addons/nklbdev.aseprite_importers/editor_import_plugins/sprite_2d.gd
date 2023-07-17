@@ -5,38 +5,27 @@ const OPTION_SPRITE2D_CENTERED: String = "sprite2d/centered"
 
 const OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(packed_spritesheet)"
 
-const PACKED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET: String = "Animate sprite's region and offset"
-const PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN: String = "Animate single atlas texture's region and margin"
-const PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
-
 const PACKED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
-	PACKED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
-	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION_AND_MARGIN,
-	PACKED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
+	"Animate sprite's region and offset",
+	"Animate single atlas texture's region and margin",
+	"Animate multiple atlas texture instances",
 ]
 
 enum PackedSpritesheetAnimationStrategy
 {
 	SpriteRegionAndOffset = 0,
 	TextureRegionAndMargin = 1,
-	TextureInstances = 2
+	TextureInstances = 2,
 }
-
 
 const OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY: String = "animation/strategy_(grid-based_spritesheet)"
 
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION: String = "Animate sprite's region"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX: String = "Animate sprite's frame index"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS: String = "Animate sprite's frame coords"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION: String = "Animate single atlas texture's region"
-const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES: String = "Animate multiple atlas texture instances"
-
 const GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES: PackedStringArray = [
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_INDEX,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_FRAME_COORDS,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_REGION,
-	GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_TEXTURE_INSTANCES,
+	"Animate sprite's region",
+	"Animate sprite's frame index",
+	"Animate sprite's frame coords",
+	"Animate single atlas texture's region",
+	"Animate multiple atlas texture instances",
 ]
 
 enum GridBasedSpritesheetAnimationStrategy
@@ -45,7 +34,7 @@ enum GridBasedSpritesheetAnimationStrategy
 	SpriteFrameIndex = 1,
 	SpriteFrameCoords = 2,
 	TextureRegion = 3,
-	TextureInstances = 4
+	TextureInstances = 4,
 }
 
 class Sprite2DParsedAnimationOptions:
@@ -75,14 +64,14 @@ func _init(parent_plugin: EditorPlugin) -> void:
 		Common.create_option(OPTION_SPRITE2D_CENTERED, true, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR),
 		Common.create_option(
 			OPTION_PACKED_SPRITESHEET_ANIMATION_STRATEGY,
-			PACKED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION_AND_OFFSET,
+			PackedSpritesheetAnimationStrategy.SpriteRegionAndOffset,
 			PROPERTY_HINT_ENUM, ",".join(PACKED_SPRITESHEET_ANIMATION_STRATEGIES),
 			PROPERTY_USAGE_EDITOR,
 			func (options:Dictionary) -> bool:
 				return options[Common.OPTION_SPRITESHEET_LAYOUT] == Common.SPRITESHEET_LAYOUTS[Common.SpritesheetLayout.PACKED]),
 		Common.create_option(
 			OPTION_GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY,
-			GRID_BASED_SPRITESHEET_ANIMATION_STRATEGY_SPRITE_REGION,
+			GridBasedSpritesheetAnimationStrategy.SpriteRegion,
 			PROPERTY_HINT_ENUM, ",".join(GRID_BASED_SPRITESHEET_ANIMATION_STRATEGIES),
 			PROPERTY_USAGE_EDITOR,
 			func (options:Dictionary) -> bool:

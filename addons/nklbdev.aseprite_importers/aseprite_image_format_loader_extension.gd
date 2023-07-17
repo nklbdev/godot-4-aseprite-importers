@@ -7,7 +7,9 @@ const __recognized_extensions: PackedStringArray = ["ase", "aseprite"]
 func _get_recognized_extensions() -> PackedStringArray:
 	return __recognized_extensions
 
-func _load_image(image: Image, file_access: FileAccess, flags: int, scale: float) -> Error:
+#func _load_image(image: Image, file_access: FileAccess, flags: int, scale: float) -> Error:
+# type hints is removed because different releases of Godot have different signature of this method
+func _load_image(image, file_access, flags, scale):
 	flags = flags as ImageFormatLoader.LoaderFlags
 
 	var source_file_path: String = ProjectSettings.globalize_path(file_access.get_path_absolute())

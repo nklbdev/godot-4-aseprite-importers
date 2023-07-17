@@ -18,7 +18,6 @@ var __import_plugins: Array[ImportPlugin]
 var __aseprite_image_format_loader_extension: AsepriteImageFormatLoaderExtension
 
 var common_options: Array[Dictionary] = Common.create_common_animation_options()
-var texture_2d_options: Array[Dictionary] = Common.create_texture_2d_options()
 
 func _enter_tree() -> void:
 	__register_project_setting(

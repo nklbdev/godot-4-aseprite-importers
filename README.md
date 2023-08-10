@@ -5,6 +5,8 @@
 
 This is a plugin for the [Godot](https://godotengine.org/) 4.x game engine that adds several import plugins for the [Aseprite](https://www.aseprite.org/) 1.3+ graphics pixel art editor files.
 
+The plugin is us actually working but try to use [Importality](https://github.com/nklbdev/godot-4-importality) instead it!
+
 https://user-images.githubusercontent.com/7024016/236665418-fe8036b9-7de5-4608-a247-b35a7f97891b.mp4
 
 ## 💽 Installation

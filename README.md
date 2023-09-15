@@ -5,7 +5,9 @@
 
 This is a plugin for the [Godot](https://godotengine.org/) 4.x game engine that adds several import plugins for the [Aseprite](https://www.aseprite.org/) 1.3+ graphics pixel art editor files.
 
-The plugin is us actually working but try to use [Importality](https://github.com/nklbdev/godot-4-importality) instead it!
+## I highly recommend that you use the [Importality](https://github.com/nklbdev/godot-4-importality) plugin instead of this plugin. It is a rethinking and continuation of the initiatives I made in this repository.
+Please read [the documentation](https://github.com/nklbdev/godot-4-importality/wiki/exporting-data-from-aseprite-(en)) for importing files from Aseprite.
+And I highly recommend [using RAM Drive](https://github.com/nklbdev/godot-4-importality/wiki/about-temporary-files-and-ram_drives-(en)) for intermediate temporary files during the import process.
 
 https://user-images.githubusercontent.com/7024016/236665418-fe8036b9-7de5-4608-a247-b35a7f97891b.mp4
 
